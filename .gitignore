@@ -10,3 +10,5 @@ application.windows64/
 application.macosx/
 build/
 *.class
+.idea/
+GEMINI.md
