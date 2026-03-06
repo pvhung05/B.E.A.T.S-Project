@@ -80,7 +80,8 @@ class Button implements Widget {
   void onClick() {
     
     if (label.equals("Toggle FX")) {
-      if (fxRenderer != null) fxRenderer.toggleGraphics();
+      // TODO[@UI]: Publish user input to the bus.
+      systemBus.publish(EventType.EVENT_UI_WIDGET_CLICKED, label);
     }
   }
 }

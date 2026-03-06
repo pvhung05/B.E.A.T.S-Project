@@ -1,8 +1,20 @@
-class EntityManager {
+class EntityManager implements IEventListener {
   ArrayList<IObject> entities;
   
   EntityManager() {
     entities = new ArrayList<IObject>();
+    // Mandatory Subscriptions
+    systemBus.subscribe(EventType.EVENT_ENTITY_SPAWN_REQUEST, this);
+    systemBus.subscribe(EventType.EVENT_ENTITY_DESTROY_REQUEST, this);
+  }
+  
+  void onEvent(EventType type, Object payload) {
+    if (type == EventType.EVENT_ENTITY_SPAWN_REQUEST) {
+      // TODO[@Sys-Design]: Parse JSON payload to extract initial spatial coordinates/parameters.
+      // Example: entities.add(new BasicEntity(...));
+    } else if (type == EventType.EVENT_ENTITY_DESTROY_REQUEST) {
+      // Logic for safe removal
+    }
   }
   
   void addEntity(IObject e) {

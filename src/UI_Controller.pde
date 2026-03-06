@@ -1,9 +1,17 @@
 // UI_Controller.pde
 // The Input Bridge: Captures raw input and translates it into simulation commands.
 
-class Controller {
+class Controller implements IEventListener {
 
   Controller() {
+    systemBus.subscribe(EventType.EVENT_ENTITY_SELECTED, this);
+    systemBus.subscribe(EventType.EVENT_ENTITY_DESELECTED, this);
+  }
+
+  void onEvent(EventType type, Object payload) {
+    if (type == EventType.EVENT_ENTITY_SELECTED) {
+      // TODO[@UI]: Update UI state machines to reflect the currently selected IObject's properties.
+    }
   }
 
   void handleMousePressed(float mx, float my, int mButton) {
@@ -18,11 +26,12 @@ class Controller {
 
     if (clickedObj != null) {
       println("Simulation Command: Selected Object");
-      // Handle selection logic here
+      // TODO[@UI]: Publish EVENT_ENTITY_SELECTED to the bus.
+      systemBus.publish(EventType.EVENT_ENTITY_SELECTED, clickedObj);
     } else {
       println("Simulation Command: Spawned Object");
-      // Example integration: spawn a concrete sandbox item
-      world.addEntity(new BasicEntity(mx, my));
+      // TODO[@UI]: Publish EVENT_ENTITY_SPAWN_REQUEST with generic payload.
+      systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new PVector(mx, my));
     }
   }
 

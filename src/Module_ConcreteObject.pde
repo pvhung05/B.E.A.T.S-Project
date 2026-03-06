@@ -2,7 +2,7 @@
 // Where all the final classes are defined
 
 class BasicEntity implements IObject {
-  // TODO[@Core]: Implement update() logic for internal state mutation based on environmental deltas. 
+  // TODO[@Comp-Eng]: Implement update() logic for internal state mutation based on environmental deltas. 
   // DO NOT declare variables outside this class. Handle generic internal state mutation.
   
   float x, y;
@@ -24,10 +24,7 @@ class BasicEntity implements IObject {
     // TODO[@Tech-Art]: Replace this solid fill() with a procedural lerpColor() driven by the component's 
     // normalized active state. Target 60 FPS.
     
-    // Ask Renderer for aesthetic juice before drawing base shapes
-    if (fxRenderer != null) {
-      fxRenderer.renderGlow(x, y, size * 1.5, color(100, 200, 255, 100));
-    }
+    // TODO[@Comp-Eng]: Concrete objects will process their internal state here.
     
     if (selected) {
       stroke(255, 0, 0);
@@ -42,7 +39,7 @@ class BasicEntity implements IObject {
   }
   
   boolean isSelected(float mx, float my) {
-    // Round BBox check
+    // Simple radius bounding box check
     float d = dist(x, y, mx, my);
     return d <= size / 2;
   }
