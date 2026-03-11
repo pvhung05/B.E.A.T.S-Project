@@ -7,6 +7,7 @@ AudioManager audioManager;
 boolean isPaused = false;
 
 void setup() {
+  surface.setTitle("Biological Equilibrium & Trophic Simulator");
   size(1280, 720);
   frameRate(60);
   
