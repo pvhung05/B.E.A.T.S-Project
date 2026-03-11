@@ -11,4 +11,5 @@ application.macosx/
 build/
 *.class
 .idea/
+.vscode/
 GEMINI.md
