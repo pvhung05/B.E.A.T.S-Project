@@ -81,7 +81,7 @@ class Button implements Widget {
     
     if (label.equals("Toggle FX")) {
       // TODO[@UI]: Publish user input to the bus.
-      systemBus.publish(EventType.EVENT_UI_WIDGET_CLICKED, label);
+      systemBus.publish(EventType.EVENT_UI_TOOL_SELECTED, new Object[]{label, null, null, null});
     }
   }
 }
