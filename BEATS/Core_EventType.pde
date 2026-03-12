@@ -1,19 +1,18 @@
+// FORMAT: EVENT_<category>_<event>
+
 public enum EventType {
-  // Application State
+  // System State
   EVENT_APP_PAUSE,
   EVENT_APP_RESUME,
-  
-  // Entity Lifecycle
+
+  // UI & Environment Input (Frontend)
+  EVENT_UI_TOOL_SELECTED,
+  EVENT_ENV_PARAM_CHANGED,
+
+  // Entity Lifecycle (Frontend/Core Engineer)
   EVENT_ENTITY_SPAWN_REQUEST,
-  EVENT_ENTITY_DESTROY_REQUEST,
-  EVENT_ENTITY_SELECTED,
-  EVENT_ENTITY_DESELECTED,
-  
-  // Physics & Transform
-  EVENT_PHYSICS_COLLISION_ENTER,
-  EVENT_ENTITY_TRANSFORM_CHANGED,
-  
-  // Media & UI
-  EVENT_AUDIO_PLAY_SAMPLE,
-  EVENT_UI_WIDGET_CLICKED
+  EVENT_ENTITY_DESTROYED,
+
+  // Audiovisual (Tech Art)
+  EVENT_AUDIO_PLAY
 }
