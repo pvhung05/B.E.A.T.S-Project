@@ -26,11 +26,6 @@
 "reproduction": {
 "energyThreshold": 30,
 "spawnRate": 0.05
-},
-
-"render": {
-"shape": "ellipse",
-"color": "green",
-"scale": 0.6
 }
+
 }

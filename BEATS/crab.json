@@ -31,12 +31,5 @@
 
 "reproduction": {
 "energyThreshold": 40
-},
-
-"render": {
-"shape": "rectangle",
-"color": "red",
-"scale": 1.2
 }
 }
-    
