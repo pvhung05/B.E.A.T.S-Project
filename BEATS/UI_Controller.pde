@@ -4,13 +4,12 @@
 class Controller implements IEventListener {
 
   Controller() {
-    systemBus.subscribe(EventType.EVENT_ENTITY_SELECTED, this);
-    systemBus.subscribe(EventType.EVENT_ENTITY_DESELECTED, this);
+    systemBus.subscribe(EventType.EVENT_UI_TOOL_SELECTED, this);
   }
 
   void onEvent(EventType type, Object payload) {
-    if (type == EventType.EVENT_ENTITY_SELECTED) {
-      // TODO[@UI]: Update UI state machines to reflect the currently selected IObject's properties.
+    if (type == EventType.EVENT_UI_TOOL_SELECTED) {
+      // TODO[@UI]: Update UI state machines to reflect the currently selected tool.
     }
   }
 
@@ -26,12 +25,12 @@ class Controller implements IEventListener {
 
     if (clickedObj != null) {
       println("Simulation Command: Selected Object");
-      // TODO[@UI]: Publish EVENT_ENTITY_SELECTED to the bus.
-      systemBus.publish(EventType.EVENT_ENTITY_SELECTED, clickedObj);
+      // TODO[@UI]: Publish EVENT_UI_TOOL_SELECTED to the bus.
+      systemBus.publish(EventType.EVENT_UI_TOOL_SELECTED, new Object[]{"CULL", null, null, null});
     } else {
       println("Simulation Command: Spawned Object");
       // TODO[@UI]: Publish EVENT_ENTITY_SPAWN_REQUEST with generic payload.
-      systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new PVector(mx, my));
+      systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{"ALGAE", mx, my, null});
     }
   }
 
