@@ -22,25 +22,25 @@ class Manager {
     widgets = new ArrayList<Widget>();
   
     temperatureSlider = new Slider(
-      sidebarX + buttonW,
-      sidebarY + (buttonH + gap) * 2,
+      UIState.sidebarX + UIState.buttonW,
+      UIState.sidebarY + (UIState.buttonH + UIState.gap) * 2,
       200,
-      buttonH,
+      UIState.buttonH,
       "Temperature",
       -20,
       50,
-      temperature
+      UIState.temperature
     );
   
     pollutionSlider = new Slider(
-      sidebarX + buttonW,
-      sidebarY + (buttonH + gap) * 3,
+      UIState.sidebarX + UIState.buttonW,
+      UIState.sidebarY + (UIState.buttonH + UIState.gap) * 3,
       200,
-      buttonH,
+      UIState.buttonH,
       "Pollution",
       0,
       100,
-      pollution
+      UIState.pollution
     );
   }
 
@@ -57,12 +57,12 @@ class Manager {
       }
     }
 
-    if(!sidebarOpen) return;
+    if(!UIState.sidebarOpen) return;
 
     // Main menu panel
-    fill(MENU_BG);
+    fill(UIState.MENU_BG);
     noStroke();
-    rect(sidebarX,sidebarY,buttonW,(buttonH+gap)*4);
+    rect(UIState.sidebarX,UIState.sidebarY,UIState.buttonW,(UIState.buttonH+UIState.gap)*4);
 
     for(Widget w:widgets){
       if(!(w instanceof ToggleButton)){
@@ -76,60 +76,65 @@ class Manager {
 
   void renderSubMenu(){
 
-    float subX = sidebarX + buttonW;
-    float subY = sidebarY;
+    float subX = UIState.sidebarX + UIState.buttonW;
+    float subY = UIState.sidebarY;
     
-    if(activeMenu == MenuType.SPAWN)
-      subY = sidebarY + (buttonH + gap) * 0;
+    if(UIState.activeMenu == MenuType.SPAWN)
+      subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 0;
     
-    if(activeMenu == MenuType.TEMPERATURE)
-      subY = sidebarY + (buttonH + gap) * 2;
+    if(UIState.activeMenu == MenuType.TEMPERATURE)
+      subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 2;
     
-    if(activeMenu == MenuType.POLLUTION)
-      subY = sidebarY + (buttonH + gap) * 3;
+    if(UIState.activeMenu == MenuType.POLLUTION)
+      subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 3;
   
-    // ================= SPAWN =================
-    if(activeMenu == MenuType.SPAWN){
+    //  SPAWN 
+    if(UIState.activeMenu == MenuType.SPAWN){
   
-      String[] items={"Fish","Plant","Predator"};
+      String[] items={"Algae", "Sardine ","Shark ","Crab"};
   
-      fill(MENU_BG);
-      rect(subX,subY,buttonW,(buttonH+gap)*items.length);
+      fill(UIState.MENU_BG);
+      rect(subX,subY,UIState.buttonW,(UIState.buttonH+UIState.gap)*items.length);
   
       for(int i=0;i<items.length;i++){
   
-        float y=subY+i*(buttonH+gap);
+        float y=subY+i*(UIState.buttonH+UIState.gap);
   
-        if(mouseX>subX && mouseX<subX+buttonW &&
-           mouseY>y && mouseY<y+buttonH){
+        if(mouseX>subX && mouseX<subX+UIState.buttonW &&
+           mouseY>y && mouseY<y+UIState.buttonH){
   
-          fill(MENU_HOVER);
-          rect(subX,y,buttonW,buttonH);
+          fill(UIState.MENU_HOVER);
+          rect(subX,y,UIState.buttonW,UIState.buttonH);
         }
   
-        fill(MENU_TEXT);
+        fill(UIState.MENU_TEXT);
         textAlign(LEFT,CENTER);
-        text(items[i],subX+10,y+buttonH/2);
+        text(items[i],subX+10,y+UIState.buttonH/2);
       }
     }
+    
+    // CULL
+    if(UIState.activeMenu == MenuType.CULL) {
+      
+    }
   
-    // ================= TEMPERATURE =================
-    if(activeMenu == MenuType.TEMPERATURE){
+    //  TEMPERATURE 
+    if(UIState.activeMenu == MenuType.TEMPERATURE){
     
       temperatureSlider.update();
       temperatureSlider.render();
     
-      temperature = temperatureSlider.value;
+      UIState.temperature = temperatureSlider.value;
     }
 
   
-    // ================= POLLUTION =================
-    if(activeMenu == MenuType.POLLUTION){
+    //  POLLUTION 
+    if(UIState.activeMenu == MenuType.POLLUTION){
     
       pollutionSlider.update();
       pollutionSlider.render();
     
-      pollution = pollutionSlider.value;
+      UIState.pollution = pollutionSlider.value;
     }
   }
   boolean handleMouseClick(float mx,float my){
@@ -141,7 +146,7 @@ class Manager {
       }
     }
   
-    float subX = sidebarX + buttonW;
+    float subX = UIState.sidebarX + UIState.buttonW;
   
     return false;
   }
@@ -169,7 +174,7 @@ class ToggleButton implements Widget {
 
     fill(0);
 
-    if(sidebarOpen){
+    if(UIState.sidebarOpen){
       triangle(x+8,y+6,x+8,y+size-6,x+size-8,y+size/2);
     }
     else{
@@ -182,8 +187,8 @@ class ToggleButton implements Widget {
   }
 
   void onClick(){
-    sidebarOpen=!sidebarOpen;
-    activeMenu=MenuType.NONE;
+    UIState.sidebarOpen=!UIState.sidebarOpen;
+    UIState.activeMenu=MenuType.NONE;
   }
 }
 
@@ -209,16 +214,16 @@ class Button implements Widget {
   void render(){
 
     if(isHovered(mouseX,mouseY)){
-      fill(MENU_HOVER);
+      fill(UIState.MENU_HOVER);
     }
     else{
-      fill(MENU_BG);
+      fill(UIState.MENU_BG);
     }
 
     noStroke();
     rect(x,y,w,h);
 
-    fill(MENU_TEXT);
+    fill(UIState.MENU_TEXT);
     textAlign(LEFT,CENTER);
     text(label,x+10,y+h/2);
 
@@ -238,17 +243,30 @@ class Button implements Widget {
   void onClick(){
 
     if(label.equals("Spawn Tool")){
-      activeMenu = activeMenu==MenuType.SPAWN ? MenuType.NONE : MenuType.SPAWN;
+      UIState.activeMenu = UIState.activeMenu==MenuType.SPAWN ? MenuType.NONE : MenuType.SPAWN;
+      return;
+    }
+    
+    if(label.equals("Cull Tool")){
+
+      UIState.cullToolActive = !UIState.cullToolActive;
+    
+      if(UIState.cullToolActive){
+        cursor(CROSS);   // tạm dùng crosshair
+      }else{
+        cursor(ARROW);
+      }
+    
       return;
     }
 
     if(label.equals("Temperature")){
-      activeMenu = activeMenu==MenuType.TEMPERATURE ? MenuType.NONE : MenuType.TEMPERATURE;
+      UIState.activeMenu = UIState.activeMenu==MenuType.TEMPERATURE ? MenuType.NONE : MenuType.TEMPERATURE;
       return;
     }
 
     if(label.equals("Pollution")){
-      activeMenu = activeMenu==MenuType.POLLUTION ? MenuType.NONE : MenuType.POLLUTION;
+      UIState.activeMenu = UIState.activeMenu==MenuType.POLLUTION ? MenuType.NONE : MenuType.POLLUTION;
       return;
     }
 
@@ -293,11 +311,11 @@ class Slider implements Widget {
   void render(){
 
     // background
-    fill(MENU_BG);
+    fill(UIState.MENU_BG);
     rect(x,y,w,h);
 
     // label
-    fill(MENU_TEXT);
+    fill(UIState.MENU_TEXT);
     textAlign(LEFT,CENTER);
     text(nf(value,1,1),x+8,y+h/3);
 

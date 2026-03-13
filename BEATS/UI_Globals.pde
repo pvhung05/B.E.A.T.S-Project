@@ -1,28 +1,36 @@
-boolean sidebarOpen=false;
+
+static class UIState {
+
+  static boolean sidebarOpen = false;
+  static boolean cullToolActive = false;
+
+  static MenuType activeMenu = MenuType.NONE;
+
+  static float sidebarX = 40;
+  static float sidebarY = 70;
+
+  static float buttonW = 160;
+  static float buttonH = 30;
+  static float gap = 2;
+
+  static float temperature = 20;
+  static float pollution = 10;
+
+  static int MENU_BG;
+  static int MENU_HOVER;
+  static int MENU_TEXT;
+
+  static void initColors(PApplet app){
+    MENU_BG = app.color(37,37,38);
+    MENU_HOVER = app.color(62,62,64);
+    MENU_TEXT = app.color(220);
+  }
+}
 
 enum MenuType{
   NONE,
   SPAWN,
+  CULL,
   TEMPERATURE,
   POLLUTION
 }
-
-MenuType activeMenu=MenuType.NONE;
-
-float sidebarX=40;
-float sidebarY=70;
-
-float buttonW=160;
-float buttonH=30;
-float gap=2;
-
-float temperature = 20;
-float pollution = 10;
-
-boolean draggingTemperature = false;
-boolean draggingPollution = false;
-
-// VSCode colors
-color MENU_BG=color(37,37,38);
-color MENU_HOVER=color(62,62,64);
-color MENU_TEXT=color(220);

@@ -18,7 +18,7 @@ class Controller implements IEventListener {
     // TODO[@UI]: Bind mouseDragged() to update the X/Y of the currently selected IObject. 
     // Ensure z-index rendering doesn't overlap the generic HUD. Interface ONLY with EntityManager.
     
-    if (activeMenu == MenuType.TEMPERATURE &&
+    if (UIState.activeMenu == MenuType.TEMPERATURE &&
         uiManager.temperatureSlider.isHovered(mx,my)){
   
       activeSlider = uiManager.temperatureSlider;
@@ -26,7 +26,7 @@ class Controller implements IEventListener {
       return;
     }
   
-    if (activeMenu == MenuType.POLLUTION &&
+    if (UIState.activeMenu == MenuType.POLLUTION &&
         uiManager.pollutionSlider.isHovered(mx,my)){
   
       activeSlider = uiManager.pollutionSlider;
