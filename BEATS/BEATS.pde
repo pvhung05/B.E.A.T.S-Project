@@ -33,7 +33,12 @@ void setup() {
     }
   });
   
-  uiManager.addWidget(new Button(20, 70, 150, 40, "Toggle FX"));
+  uiManager.addWidget(new ToggleButton(0,70,30));
+
+  uiManager.addWidget(new Button(sidebarX,sidebarY,buttonW,buttonH,"Spawn Tool",EventType.EVENT_UI_TOOL_SELECTED));
+  uiManager.addWidget(new Button(sidebarX,sidebarY+(buttonH+gap)*1,buttonW,buttonH,"Cull Tool",EventType.EVENT_UI_TOOL_SELECTED));
+  uiManager.addWidget(new Button(sidebarX,sidebarY+(buttonH+gap)*2,buttonW,buttonH,"Temperature",EventType.EVENT_UI_TOOL_SELECTED));
+  uiManager.addWidget(new Button(sidebarX,sidebarY+(buttonH+gap)*3,buttonW,buttonH,"Pollution",EventType.EVENT_UI_TOOL_SELECTED));
   
   // TODO[@Sys-Design]: Trigger initial EVENT_ENTITY_SPAWN_REQUEST events by parsing data/scenario_01.json.
 }
