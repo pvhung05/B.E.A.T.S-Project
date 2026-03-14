@@ -91,7 +91,7 @@ class Manager {
     //  SPAWN 
     if(UIState.activeMenu == MenuType.SPAWN){
   
-      String[] items={"Algae", "Sardine ","Shark ","Crab"};
+      SpawnType[] items = SpawnType.values();
   
       fill(UIState.MENU_BG);
       rect(subX,subY,UIState.buttonW,(UIState.buttonH+UIState.gap)*items.length);
@@ -109,7 +109,7 @@ class Manager {
   
         fill(UIState.MENU_TEXT);
         textAlign(LEFT,CENTER);
-        text(items[i],subX+10,y+UIState.buttonH/2);
+        text(items[i].name(), subX+10, y+UIState.buttonH/2);
       }
     }
     
@@ -139,17 +139,52 @@ class Manager {
   }
   boolean handleMouseClick(float mx,float my){
 
-    for(Widget w:widgets){
-      if(w.isHovered(mx,my)){
-        w.onClick();
+  for(Widget w:widgets){
+    if(w.isHovered(mx,my)){
+      w.onClick();
+      return true;
+    }
+  }
+
+  float subX = UIState.sidebarX + UIState.buttonW;
+  float subY = UIState.sidebarY;
+
+  if(UIState.activeMenu == MenuType.SPAWN)
+    subY = UIState.sidebarY;
+
+  if(UIState.activeMenu == MenuType.TEMPERATURE)
+    subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 2;
+
+  if(UIState.activeMenu == MenuType.POLLUTION)
+    subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 3;
+
+  if(UIState.activeMenu == MenuType.SPAWN){
+
+    SpawnType[] items = SpawnType.values();
+
+    for(int i=0;i<items.length;i++){
+
+      float y = subY + i*(UIState.buttonH + UIState.gap);
+
+      if(mx>subX && mx<subX+UIState.buttonW &&
+         my>y && my<y+UIState.buttonH){
+
+        if(UIState.selectedSpawn == items[i]){
+          UIState.selectedSpawn = null;   // bỏ chọn tool
+          cursor(ARROW);
+        }
+        else{
+          UIState.selectedSpawn = items[i]; // chọn tool
+          cursor(UIState.getSpawnCursor(items[i]));
+        }
+      
         return true;
       }
     }
-  
-    float subX = UIState.sidebarX + UIState.buttonW;
-  
-    return false;
   }
+
+  return false;
+}
 }
 
 //toggle button
@@ -252,7 +287,8 @@ class Button implements Widget {
       UIState.cullToolActive = !UIState.cullToolActive;
     
       if(UIState.cullToolActive){
-        cursor(CROSS);   // tạm dùng crosshair
+        UIState.selectedSpawn = null;
+        cursor(Assets.FISHING);   // tạm dùng crosshair
       }else{
         cursor(ARROW);
       }

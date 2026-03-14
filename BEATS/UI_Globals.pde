@@ -5,6 +5,7 @@ static class UIState {
   static boolean cullToolActive = false;
 
   static MenuType activeMenu = MenuType.NONE;
+  static SpawnType selectedSpawn = null;
 
   static float sidebarX = 40;
   static float sidebarY = 70;
@@ -25,6 +26,16 @@ static class UIState {
     MENU_HOVER = app.color(62,62,64);
     MENU_TEXT = app.color(220);
   }
+  
+  static PImage getSpawnCursor(SpawnType type){
+    switch(type){
+      case ALGAE: return Assets.ALGAE;
+      case CRAB: return Assets.CRAB;
+      case SARDINE: return Assets.SARDINE;
+      case SHARK: return Assets.SHARK;
+    }
+    return null;
+  }
 }
 
 enum MenuType{
@@ -33,4 +44,11 @@ enum MenuType{
   CULL,
   TEMPERATURE,
   POLLUTION
+}
+
+enum SpawnType{
+  ALGAE,
+  CRAB,
+  SARDINE,
+  SHARK
 }

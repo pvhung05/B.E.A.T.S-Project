@@ -10,6 +10,7 @@ void setup() {
   surface.setTitle("Biological Equilibrium & Trophic Simulator");
   size(1280, 720);
   UIState.initColors(this);
+  Assets.load(this);
   frameRate(60);
   
   // Initialize Global Routing Hub First
@@ -35,7 +36,6 @@ void setup() {
   });
   
   uiManager.addWidget(new ToggleButton(0,70,30));
-
   uiManager.addWidget(new Button(UIState.sidebarX,UIState.sidebarY,UIState.buttonW,UIState.buttonH,"Spawn Tool",EventType.EVENT_UI_TOOL_SELECTED));
   uiManager.addWidget(new Button(UIState.sidebarX,UIState.sidebarY+(UIState.buttonH+UIState.gap)*1,UIState.buttonW,UIState.buttonH,"Cull Tool",EventType.EVENT_UI_TOOL_SELECTED));
   uiManager.addWidget(new Button(UIState.sidebarX,UIState.sidebarY+(UIState.buttonH+UIState.gap)*2,UIState.buttonW,UIState.buttonH,"Temperature",EventType.EVENT_UI_TOOL_SELECTED));

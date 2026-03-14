@@ -44,19 +44,18 @@ class Controller implements IEventListener {
       println("Simulation Command: Selected Object");
       // TODO[@UI]: Publish EVENT_UI_TOOL_SELECTED to the bus.
       systemBus.publish(EventType.EVENT_UI_TOOL_SELECTED, new Object[]{"CULL", null, null, null});
-    } else {
-      println("Simulation Command: Spawned Object");
-      // TODO[@UI]: Publish EVENT_ENTITY_SPAWN_REQUEST with generic payload.
-      systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{"ALGAE", mx, my, null});
+    } 
+    else if (clickedObj == null && UIState.selectedSpawn != null) {
+      println("Simulation Command: Spawned " + UIState.selectedSpawn);
+      systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{UIState.selectedSpawn.name(), mx, my, null}
+     );
     }
   }
-
   void handleMouseReleased(float mx, float my, int mButton) {
 
     if(activeSlider != null){
       activeSlider.dragging = false;
     }
-  
     activeSlider = null;
   }
 
