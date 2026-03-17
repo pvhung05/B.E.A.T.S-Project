@@ -10,8 +10,7 @@ class EntityManager implements IEventListener {
   
   void onEvent(EventType type, Object payload) {
     if (type == EventType.EVENT_ENTITY_SPAWN_REQUEST) {
-      // TODO[@Sys-Design]: Parse JSON payload to extract initial spatial coordinates/parameters.
-      // Example: entities.add(new BasicEntity(...));
+      // TODO: @[Sys-Des] parse payload to actually spawn the entity of final class as EVENT_DICTIONARY described
     } else if (type == EventType.EVENT_ENTITY_DESTROYED) {
       // Logic for safe removal
     }
