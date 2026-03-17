@@ -45,51 +45,51 @@ final class Crab extends Decomposer {
     }
 }
 
-// Module_ConcreteObject.pde
-// Where all the final classes are defined
 
-final class Algae extends Producer {
+final class Algae extends Producer { 
     
-    Algae(float x, float y, float energyLevel, float maxEnergy, float optimalDepthMin, float optimalDepthMax) {
-        super(x, y, energyLevel, maxEnergy, optimalDepthMin, optimalDepthMax);
+    Algae(float x, float y, float energy, float maxE, float dMin, float dMax) {
+        super(x, y, energy, maxE, dMin, dMax);
     }
 
     @Override
     void update() {
-        if (isDead) return; [cite: 95]
+        if (isDead()) return;
 
-        updateBiologicalState(); [cite: 102]
+        // Cập nhật trạng thái sinh học cơ bản 
+        updateBiologicalState();
 
-        // TODO: implement photosynthesis logic (e.g., recovery energy based on Y depth/light intensity). [cite: 18, 36]
-        
-        // TODO: implement reproduction logic (e.g., clone itself when energy reaches max). 
+        // TODO: Thực hiện logic quang hợp dựa trên độ sâu y
+        photosynthesis();  
+        // TODO: Kiểm tra điều kiện nhân bản để cân bằng quần thể 
+        checkReproduction();
     }
 
     @Override
     void render() {
-        if (isDead) return; [cite: 95]
-        // TODO: implement rendering logic for Algae (e.g., green primitive shapes for 60 FPS).
+        if (isDead()) return;
+        // TODO: Vẽ tảo bằng các hình khối cơ bản để đảm bảo hiệu suất 60 FPS 
     }
 
     @Override
     boolean isSelected(float mx, float my) {
         return false; 
-        // TODO: implement selection logic based on mouse coordinates.
+        // TODO: Xử lý logic chọn thực thể bằng chuột trên UI 
     }
 
     @Override
     boolean canConsume(Organism target) {
-        return false; 
-        // Producer typically does not consume other organisms in this sim.
+        // Tảo là sinh vật sản xuất, không tham gia săn mồi 
+        return false;
     }
 
     @Override
     void photosynthesis() {
-        // TODO: implement energy recovery logic depending on depth Y (Shallow/Mid/Deep). 
+        // TODO: Tăng energyLevel dựa vào ánh sáng tại vùng nông/trung/sâu 
     }
 
     void checkReproduction() {
-        // TODO: implement biological control: duplicate when energy is max and reduce current energy. [cite: 75, 76]
-        // TODO: publish EVENT_ENTITY_SPAWN_REQUEST via EventBus. [cite: 23]
+        // TODO: Khi đạt MaxEnergy, tạo bản sao và giảm năng lượng 
+        // TODO: Sử dụng EventBus để gửi yêu cầu spawn thực thể mới 
     }
 }
