@@ -1,0 +1,31 @@
+{
+"name": "algae",
+"type": "producer",
+
+"energy": {
+"maxEnergy": 40,
+"metabolismRate": 0.02,
+"photosynthesisRate": 0.5
+},
+
+"movement": {
+"canMove": false,
+"speed": 0
+},
+
+"ecology": {
+"minDepth": 0.0,
+"maxDepth": 0.3,
+"minWidth": 0.0,
+"maxWidth": 1.0,
+"minTemperature": 5,
+"maxTemperature": 35,
+"pollutionTolerance": 0.6
+},
+
+"reproduction": {
+"energyThreshold": 30,
+"spawnRate": 0.05
+}
+
+}
