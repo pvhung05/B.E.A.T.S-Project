@@ -10,7 +10,17 @@ class EntityManager implements IEventListener {
   
   void onEvent(EventType type, Object payload) {
     if (type == EventType.EVENT_ENTITY_SPAWN_REQUEST) {
-      // TODO: @[Sys-Des] parse payload to actually spawn the entity of final class as EVENT_DICTIONARY described
+      Object[] data = (Object[]) payload;
+      String entityId = (String) data[0];
+      float x = (Float) data[1];
+      float y = (Float) data[2];
+
+      if (entityId.equals("CRAB")) {
+        entities.add(new Crab(x, y, 20.0f)); // Starting energy 20
+      } else if (entityId.equals("ALGAE")) {
+        // entities.add(new Algae(x, y, 10.0f, 40.0f, 0.0f, 0.3f)); // Placeholder for Algae
+      }
+      // TODO: Add cases for SARDINE and SHARK
     } else if (type == EventType.EVENT_ENTITY_DESTROYED) {
       // Logic for safe removal
     }

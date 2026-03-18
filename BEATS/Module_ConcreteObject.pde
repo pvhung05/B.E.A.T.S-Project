@@ -5,13 +5,11 @@
 
 final class Crab extends Decomposer {  
     
-    Decomposer(float x, float y, float energyLevel) {
-        float maxEnergy = 0;
-        float optimalDepthMin = 0; 
-        float optimalDepthMax = 1;
-        // TODO: @[Core-Eng]: please implement the logic to load the data from data/organism JSON file
-        // as a **static** member and reuse it for instances  
-        super(x, y, energyLevel, maxEnergy, optimalDepthMin, optimalDepthMax);
+    Crab(float x, float y, float energyLevel) {
+        // Initializing with zero/defaults. 
+        // TODO: @[Core-Eng]: please implement a static load method to parse data from data/organisms/crab.json
+        // and reuse it for instances. Ensure the values are cached once at startup.
+        super(x, y, energyLevel, 50.0f, 0.75f, 1.0f);
     }
     
     @Override
