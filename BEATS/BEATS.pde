@@ -54,6 +54,8 @@ void draw() {
   
   world.run();
   
+  fxManager.run();
+  
   uiManager.render();
   
   displayDebugInfo();

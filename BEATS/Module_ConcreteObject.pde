@@ -5,13 +5,11 @@
 
 final class Crab extends Decomposer {  
     
-    Decomposer(float x, float y, float energyLevel) {
-        float maxEnergy = 0;
-        float optimalDepthMin = 0; 
-        float optimalDepthMax = 1;
-        // TODO: @[Core-Eng]: please implement the logic to load the data from data/organism JSON file
-        // as a **static** member and reuse it for instances  
-        super(x, y, energyLevel, maxEnergy, optimalDepthMin, optimalDepthMax);
+    Crab(float x, float y, float energyLevel) {
+        // Initializing with zero/defaults. 
+        // TODO: @[Core-Eng]: please implement a static load method to parse data from data/organisms/crab.json
+        // and reuse it for instances. Ensure the values are cached once at startup.
+        super(x, y, energyLevel, 50.0f, 0.75f, 1.0f);
     }
     
     @Override
@@ -52,5 +50,54 @@ final class Crab extends Decomposer {
     @Override
     void searchCorpse() {
         // TODO: implement corpse searching logic (e.g., scan nearby area for dead organisms to consume).
+    }
+}
+
+
+final class Algae extends Producer { 
+    
+    Algae(float x, float y, float energy, float maxE, float dMin, float dMax) {
+        super(x, y, energy, maxE, dMin, dMax);
+    }
+
+    @Override
+    void update() {
+        if (isDead()) return;
+
+        // Cập nhật trạng thái sinh học cơ bản 
+        updateBiologicalState();
+
+        // TODO: Thực hiện logic quang hợp dựa trên độ sâu y
+        photosynthesis();  
+        // TODO: Kiểm tra điều kiện nhân bản để cân bằng quần thể 
+        checkReproduction();
+    }
+
+    @Override
+    void render() {
+        if (isDead()) return;
+        // TODO: Vẽ tảo bằng các hình khối cơ bản để đảm bảo hiệu suất 60 FPS 
+    }
+
+    @Override
+    boolean isSelected(float mx, float my) {
+        return false; 
+        // TODO: Xử lý logic chọn thực thể bằng chuột trên UI 
+    }
+
+    @Override
+    boolean canConsume(Organism target) {
+        // Tảo là sinh vật sản xuất, không tham gia săn mồi 
+        return false;
+    }
+
+    @Override
+    void photosynthesis() {
+        // TODO: Tăng energyLevel dựa vào ánh sáng tại vùng nông/trung/sâu 
+    }
+
+    void checkReproduction() {
+        // TODO: Khi đạt MaxEnergy, tạo bản sao và giảm năng lượng 
+        // TODO: Sử dụng EventBus để gửi yêu cầu spawn thực thể mới 
     }
 }
