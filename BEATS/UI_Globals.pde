@@ -2,7 +2,6 @@
 static class UIState {
 
   static boolean sidebarOpen = false;
-  static boolean cullToolActive = false;
 
   static MenuType activeMenu = MenuType.NONE;
   static SpawnType selectedSpawn = null;

@@ -59,10 +59,10 @@ class Manager {
 
     if(!UIState.sidebarOpen) return;
 
-    // Main menu panel
+    // Main menu panel - fixed position
     fill(UIState.MENU_BG);
     noStroke();
-    rect(UIState.sidebarX,UIState.sidebarY,UIState.buttonW,(UIState.buttonH+UIState.gap)*4);
+    rect(UIState.sidebarX, UIState.sidebarY, UIState.buttonW, (UIState.buttonH + UIState.gap) * 4);
 
     for(Widget w:widgets){
       if(!(w instanceof ToggleButton)){
@@ -75,26 +75,30 @@ class Manager {
   }
 
   void renderSubMenu(){
-
-    float subX = UIState.sidebarX + UIState.buttonW;
-    float subY = UIState.sidebarY;
+    // ========== FIXED SUBMENU POSITIONING ==========
+    // All submenus render at fixed positions based on which menu is active
     
+    float subX = UIState.sidebarX + UIState.buttonW; // Right of main panel (fixed: 200)
+    float subY;
+    
+    // Calculate submenu Y based on active menu (fixed offsets)
     if(UIState.activeMenu == MenuType.SPAWN)
       subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 0;
-    
-    if(UIState.activeMenu == MenuType.TEMPERATURE)
+    else if(UIState.activeMenu == MenuType.CULL)
+      subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 1;
+    else if(UIState.activeMenu == MenuType.TEMPERATURE)
       subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 2;
-    
-    if(UIState.activeMenu == MenuType.POLLUTION)
+    else if(UIState.activeMenu == MenuType.POLLUTION)
       subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 3;
+    else
+      return; // No submenu if no menu is active
   
     //  SPAWN 
     if(UIState.activeMenu == MenuType.SPAWN){
-  
       SpawnType[] items = SpawnType.values();
   
       fill(UIState.MENU_BG);
-      rect(subX,subY,UIState.buttonW,(UIState.buttonH+UIState.gap)*items.length);
+      rect(subX, subY, UIState.buttonW, (UIState.buttonH + UIState.gap) * items.length);
   
       for(int i=0;i<items.length;i++){
   
@@ -115,7 +119,12 @@ class Manager {
     
     // CULL
     if(UIState.activeMenu == MenuType.CULL) {
-      
+      fill(UIState.MENU_BG);
+      rect(subX, subY, UIState.buttonW, UIState.buttonH);
+    
+      fill(UIState.MENU_TEXT);
+      textAlign(LEFT, CENTER);
+      text("Click entity to delete", subX + 10, subY + UIState.buttonH/2);
     }
   
     //  TEMPERATURE 
@@ -284,16 +293,18 @@ class Button implements Widget {
     
     if(label.equals("Cull Tool")){
 
-      UIState.cullToolActive = !UIState.cullToolActive;
-    
-      if(UIState.cullToolActive){
+        UIState.activeMenu =
+          UIState.activeMenu == MenuType.CULL ? MenuType.NONE : MenuType.CULL;
+      
         UIState.selectedSpawn = null;
-        cursor(Assets.FISHING);   // tạm dùng crosshair
-      }else{
-        cursor(ARROW);
+      
+        if(UIState.activeMenu == MenuType.CULL){ 
+          //UIState.selectedSpawn = null;
+          cursor(Assets.FISHING);
+        } else {
+          cursor(ARROW);
+        return;
       }
-    
-      return;
     }
 
     if(label.equals("Temperature")){

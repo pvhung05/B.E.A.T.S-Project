@@ -15,40 +15,60 @@ class Controller implements IEventListener {
   }
 
   void handleMousePressed(float mx, float my, int mButton) {
+    // Only process left mouse button (LEFT = 37)
+    if (mButton != LEFT) return;
+    
     // TODO[@UI]: Bind mouseDragged() to update the X/Y of the currently selected IObject. 
     // Ensure z-index rendering doesn't overlap the generic HUD. Interface ONLY with EntityManager.
     
+    // 1. SCREEN-SPACE: Check HUD elements first (Sliders, Buttons)
     if (UIState.activeMenu == MenuType.TEMPERATURE &&
-        uiManager.temperatureSlider.isHovered(mx,my)){
-  
+        uiManager.temperatureSlider.isHovered(mx, my)){
       activeSlider = uiManager.temperatureSlider;
       activeSlider.dragging = true;
       return;
     }
   
     if (UIState.activeMenu == MenuType.POLLUTION &&
-        uiManager.pollutionSlider.isHovered(mx,my)){
-  
+        uiManager.pollutionSlider.isHovered(mx, my)){
       activeSlider = uiManager.pollutionSlider;
       activeSlider.dragging = true;
       return;
     }
     
+    // Check UI widgets (buttons, menu items) - all in screen-space
     if (uiManager.handleMouseClick(mx, my)) {
       return;
     }
     
-    IObject clickedObj = world.getObjectAt(mx, my);
+    // 2. WORLD-SPACE: Convert screen coordinates to world coordinates using camera parameters
+    // This accounts for camera pan/zoom by incorporating cameraCenter and viewport dimensions
+    PVector worldPos = screenToWorld(mx, my);
 
-    if (clickedObj != null) {
-      println("Simulation Command: Selected Object");
-      // TODO[@UI]: Publish EVENT_UI_TOOL_SELECTED to the bus.
-      systemBus.publish(EventType.EVENT_UI_TOOL_SELECTED, new Object[]{"CULL", null, null, null});
+    // 3. Process world-space interactions (Spawn/Cull)
+    if (UIState.activeMenu == MenuType.CULL) {
+      // Find entity at world position
+      IObject clickedObj = world.getObjectAt(worldPos.x, worldPos.y);
+      if (clickedObj != null) {
+        println("Simulation Command: Destroying Object at " + worldPos);
+        // Publish EVENT_ENTITY_DESTROYED with the clicked object as payload
+        // EntityManager and FX_Manager will listen to this event and handle cleanup/effects
+        systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, clickedObj);
+        return;
+      }
     } 
-    else if (clickedObj == null && UIState.selectedSpawn != null) {
-      println("Simulation Command: Spawned " + UIState.selectedSpawn);
-      systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{UIState.selectedSpawn.name(), mx, my, null}
-     );
+    
+    // Spawn entity at world position
+    if (UIState.selectedSpawn != null) {
+      println("Simulation Command: Spawned " + UIState.selectedSpawn + " at " + worldPos);
+      systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST,
+        new Object[]{
+          UIState.selectedSpawn.name(),
+          worldPos.x,
+          worldPos.y,
+          null
+        }
+      );
     }
   }
   void handleMouseReleased(float mx, float my, int mButton) {
@@ -94,6 +114,34 @@ class Controller implements IEventListener {
   void handleKeyReleased(int k, int kCode) {
     // Handle key release
   }
+  
+  // ========== COORDINATE TRANSFORMATION ==========
+  // Converts screen-space coordinates (mouse position) to world-space coordinates
+  // Required for proper entity interaction when camera is panned/zoomed
+  // Formula: world = screen + cameraTopLeft
+  // where: cameraTopLeft = cameraCenter - (cameraWidth/2, cameraHeight/2)
+  PVector screenToWorld(float sx, float sy) {
+    // Calculate camera's top-left corner in world space
+    float camPosX = cameraCenter.x - cameraWidth * 0.5f;
+    float camPosY = cameraCenter.y - cameraHeight * 0.5f;
+  
+    // Add camera offset to screen coordinates to get world position
+    return new PVector(
+      sx + camPosX,
+      sy + camPosY
+    );
+  }
+  
+  // Inverse transformation: converts world coordinates to screen-space for rendering
+  PVector worldToScreen(float wx, float wy) {
+    float camPosX = cameraCenter.x - cameraWidth * 0.5f;
+    float camPosY = cameraCenter.y - cameraHeight * 0.5f;
+    
+    return new PVector(
+      wx - camPosX,
+      wy - camPosY
+    );
+  }
 }
 
 // Processing global input event hooks
@@ -115,12 +163,4 @@ void mouseDragged() {
   if (uiController != null) {
     uiController.handleMouseDragged(mouseX, mouseY);
   }
-}
-
-void keyPressed() {
-  if (uiController != null) uiController.handleKeyPressed(key, keyCode);
-}
-
-void keyReleased() {
-  if (uiController != null) uiController.handleKeyReleased(key, keyCode);
 }
