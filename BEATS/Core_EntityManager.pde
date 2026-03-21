@@ -23,7 +23,13 @@ class EntityManager implements IEventListener {
       }
       // TODO: Add cases for SARDINE and SHARK
     } else if (type == EventType.EVENT_ENTITY_DESTROYED) {
-      // Logic for safe removal
+      // Remove the entity from the world
+      // Payload should be the IObject instance to destroy
+      if (payload instanceof IObject) {
+        IObject targetObj = (IObject) payload;
+        entities.remove(targetObj);
+        println("EntityManager: Entity destroyed - " + targetObj.getClass().getSimpleName());
+      }
     }
   }
 
@@ -75,4 +81,3 @@ class EntityManager implements IEventListener {
     return null;
   }
 }
-
