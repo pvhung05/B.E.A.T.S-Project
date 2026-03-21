@@ -15,6 +15,13 @@ class Controller implements IEventListener {
   }
 
   void handleMousePressed(float mx, float my, int mButton) {
+    if (mButton == RIGHT && player != null) {
+
+      PVector worldPos = screenToWorld(mx, my);
+      player.setMoveTarget(worldPos.x, worldPos.y);
+  
+      println("Human moving to: " + worldPos);
+  }
     // Only process left mouse button (LEFT = 37)
     if (mButton != LEFT) return;
     
