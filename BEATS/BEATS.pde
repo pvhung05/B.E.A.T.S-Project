@@ -8,7 +8,9 @@ boolean isPaused = false;
 PVector cameraCenter;
 float cameraWidth;
 float cameraHeight;
-HumanTest player;
+boolean isDraggingCamera = false;
+PVector lastMouse = new PVector();
+
 
 void setup() {
   surface.setTitle("Biological Equilibrium & Trophic Simulator");
@@ -22,7 +24,7 @@ void setup() {
   Assets.load(this);
   frameRate(60);
   
-  player = new HumanTest(100, 100);
+
   // Initialize Global Routing Hub First
   systemBus = new EventBus();
   
@@ -76,11 +78,7 @@ void draw() {
   PVector cam = getCameraPos();
   translate(-cam.x, -cam.y);
   
-  if (player != null) {
-    player.update();
-    cameraCenter.set(player.x, player.y);
-    player.render();
-  }
+
   
   world.run();
   fxManager.run();

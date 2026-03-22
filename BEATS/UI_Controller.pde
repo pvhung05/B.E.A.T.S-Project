@@ -15,13 +15,6 @@ class Controller implements IEventListener {
   }
 
   void handleMousePressed(float mx, float my, int mButton) {
-    if (mButton == RIGHT && player != null) {
-
-      PVector worldPos = screenToWorld(mx, my);
-      player.setMoveTarget(worldPos.x, worldPos.y);
-  
-      println("Human moving to: " + worldPos);
-  }
     // Only process left mouse button (LEFT = 37)
     if (mButton != LEFT) return;
     
@@ -158,16 +151,27 @@ void mousePressed() {
   if (uiController != null) {
     uiController.handleMousePressed(mouseX, mouseY, mouseButton);
   }
+  if (mouseButton == RIGHT) {
+    isDraggingCamera = true;
+    lastMouse.set(mouseX, mouseY);
+  }
 }
 
 void mouseReleased() {
-  if (uiController != null) {
-    uiController.handleMouseReleased(mouseX, mouseY, mouseButton);
+  if (mouseButton == RIGHT) {
+    isDraggingCamera = false;
   }
 }
 
 void mouseDragged() {
-  if (uiController != null) {
-    uiController.handleMouseDragged(mouseX, mouseY);
+  if (isDraggingCamera) {
+
+    float dx = mouseX - lastMouse.x;
+    float dy = mouseY - lastMouse.y;
+
+    cameraCenter.x -= dx;
+    cameraCenter.y -= dy;
+
+    lastMouse.set(mouseX, mouseY);
   }
 }
