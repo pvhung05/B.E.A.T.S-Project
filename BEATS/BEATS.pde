@@ -1,5 +1,6 @@
 EventBus systemBus;
 EntityManager world;
+WorldView worldView;
 Controller uiController;
 Manager uiManager;
 FX_Manager fxManager;
@@ -15,6 +16,8 @@ void setup() {
   
   // Initialize Global Routing Hub First
   systemBus = new EventBus();
+
+  worldView = new WorldView();
   
   // Initialize Subscribers (Subscribers handle their own bus registration in constructors)
   world = new EntityManager();

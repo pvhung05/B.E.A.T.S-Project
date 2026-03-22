@@ -14,9 +14,10 @@ final class FX_RandomParticle extends FX_Particle {
   }
 
   void render() {
+    PVector s = worldView.worldToScreenFX(pos.x, pos.y);
     noStroke();
     fill(255, 80, 80, life * 4);
-    ellipse(pos.x, pos.y, 4, 4);
+    ellipse(s.x, s.y, 4, 4);
   }
 
 }
