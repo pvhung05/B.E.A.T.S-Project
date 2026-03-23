@@ -2,8 +2,6 @@
 // The Input Bridge: Captures raw input and translates it into simulation commands.
 
 class Controller implements IEventListener {
-  Slider activeSlider;
-
   Controller() {
     systemBus.subscribe(EventType.EVENT_UI_TOOL_SELECTED, this);
   }
@@ -15,53 +13,35 @@ class Controller implements IEventListener {
   }
 
   void handleMousePressed(float mx, float my, int mButton) {
-    // Only process left mouse button (LEFT = 37)
-    if (mButton != LEFT) return;
-    
-    // TODO[@UI]: Bind mouseDragged() to update the X/Y of the currently selected IObject. 
-    // Ensure z-index rendering doesn't overlap the generic HUD. Interface ONLY with EntityManager.
-    
-    // 1. SCREEN-SPACE: Check HUD elements first (Sliders, Buttons)
-    if (UIState.activeMenu == MenuType.TEMPERATURE &&
-        uiManager.temperatureSlider.isHovered(mx, my)){
-      activeSlider = uiManager.temperatureSlider;
-      activeSlider.dragging = true;
-      return;
-    }
   
-    if (UIState.activeMenu == MenuType.POLLUTION &&
-        uiManager.pollutionSlider.isHovered(mx, my)){
-      activeSlider = uiManager.pollutionSlider;
-      activeSlider.dragging = true;
-      return;
-    }
-    
-    // Check UI widgets (buttons, menu items) - all in screen-space
+    if (mButton != LEFT) return;
+  
+    // 1. Let UI consume first
     if (uiManager.handleMouseClick(mx, my)) {
       return;
     }
-    
-    // 2. WORLD-SPACE: Convert screen coordinates to world coordinates using camera parameters
-    // This accounts for camera pan/zoom by incorporating cameraCenter and viewport dimensions
+  
+    // 2. Convert to world-space
     PVector worldPos = screenToWorld(mx, my);
-
-    // 3. Process world-space interactions (Spawn/Cull)
+  
+    // 3. Cull
     if (UIState.activeMenu == MenuType.CULL) {
-      // Find entity at world position
       IObject clickedObj = world.getObjectAt(worldPos.x, worldPos.y);
       if (clickedObj != null) {
-        println("Simulation Command: Destroying Object at " + worldPos);
-        // Publish EVENT_ENTITY_DESTROYED with the clicked object as payload
-        // EntityManager and FX_Manager will listen to this event and handle cleanup/effects
         systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, clickedObj);
         return;
       }
-    } 
-    
-    // Spawn entity at world position
+    }
+  
+    // 4. Spawn
     if (UIState.selectedSpawn != null) {
-      println("Simulation Command: Spawned " + UIState.selectedSpawn + " at " + worldPos);
-      systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST,
+      println(
+        "Spawned " + UIState.selectedSpawn.name() +
+        " at (" + worldPos.x + ", " + worldPos.y + ")"
+      );
+      
+      systemBus.publish(
+        EventType.EVENT_ENTITY_SPAWN_REQUEST,
         new Object[]{
           UIState.selectedSpawn.name(),
           worldPos.x,
@@ -72,36 +52,21 @@ class Controller implements IEventListener {
     }
   }
   void handleMouseReleased(float mx, float my, int mButton) {
-
-    if(activeSlider != null){
-      activeSlider.dragging = false;
+      
+      SubMenu menu = uiManager.subMenus.get(UIState.activeMenu);
+      if (menu != null) {
+        menu.handleMouseReleased();
+      }
+  
     }
-    activeSlider = null;
-  }
 
   void handleMouseDragged(float mx, float my) {
-  
-    if (activeSlider != null && activeSlider.dragging) {
-  
-      activeSlider.value = map(
-        mx,
-        activeSlider.x + 10,
-        activeSlider.x + activeSlider.w - 10,
-        activeSlider.minVal,
-        activeSlider.maxVal
-      );
-  
-      activeSlider.value = constrain(
-        activeSlider.value,
-        activeSlider.minVal,
-        activeSlider.maxVal
-      );
-  
-      systemBus.publish(
-        EventType.EVENT_UI_SLIDER_CHANGED,
-        new Object[]{activeSlider.label, activeSlider.value, null, null}
-      );
+    
+    SubMenu menu = uiManager.subMenus.get(UIState.activeMenu);
+    if (menu != null) {
+      menu.handleMouseDragged(mx, my);
     }
+  
   }
   void handleKeyPressed(int k, int kCode) {
     // Translate raw key press into simulation commands
@@ -148,22 +113,34 @@ class Controller implements IEventListener {
 // These scatter events are corralled into the Controller bridge.
 
 void mousePressed() {
-  if (uiController != null) {
-    uiController.handleMousePressed(mouseX, mouseY, mouseButton);
-  }
+
   if (mouseButton == RIGHT) {
     isDraggingCamera = true;
     lastMouse.set(mouseX, mouseY);
+    return;
+  }
+
+  if (uiController != null) {
+    uiController.handleMousePressed(mouseX, mouseY, mouseButton);
   }
 }
 
 void mouseReleased() {
+
   if (mouseButton == RIGHT) {
     isDraggingCamera = false;
+  }
+
+  if (uiController != null) {
+    uiController.handleMouseReleased(mouseX, mouseY, mouseButton);
   }
 }
 
 void mouseDragged() {
+  if (uiController != null) {
+    uiController.handleMouseDragged(mouseX, mouseY);
+  }
+  
   if (isDraggingCamera) {
 
     float dx = mouseX - lastMouse.x;
