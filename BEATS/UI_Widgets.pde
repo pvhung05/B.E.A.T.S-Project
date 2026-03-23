@@ -13,44 +13,98 @@ interface Widget {
 
 class Manager {
 
+  HashMap<MenuType, SubMenu> subMenus;
   ArrayList<Widget> widgets;
-  Slider temperatureSlider;
-  Slider pollutionSlider;
 
   Manager(){
 
     widgets = new ArrayList<Widget>();
-  
-    temperatureSlider = new Slider(
-      UIState.sidebarX + UIState.buttonW,
+    subMenus = new HashMap<MenuType, SubMenu>();
+    float subX = UIState.sidebarX + UIState.buttonW;
+
+    
+
+    widgets.add(new ToggleButton(
+      UIState.sidebarX - 40,
+      UIState.sidebarY,
+      30
+    ));
+
+    widgets.add(new Button(
+      UIState.sidebarX,
+      UIState.sidebarY,
+      UIState.buttonW,
+      UIState.buttonH,
+      "Spawn Tool",
+      () -> UIState.activeMenu = MenuType.SPAWN
+    ));
+
+    widgets.add(new Button(
+      UIState.sidebarX,
+      UIState.sidebarY + UIState.buttonH + UIState.gap,
+      UIState.buttonW,
+      UIState.buttonH,
+      "Cull Tool",
+      () -> UIState.activeMenu = MenuType.CULL
+    ));
+
+    widgets.add(new Button(
+      UIState.sidebarX,
       UIState.sidebarY + (UIState.buttonH + UIState.gap) * 2,
-      200,
+      UIState.buttonW,
       UIState.buttonH,
       "Temperature",
-      -20,
-      50,
-      UIState.temperature
-    );
-  
-    pollutionSlider = new Slider(
-      UIState.sidebarX + UIState.buttonW,
+      () -> UIState.activeMenu = MenuType.TEMPERATURE
+    ));
+
+    widgets.add(new Button(
+      UIState.sidebarX,
       UIState.sidebarY + (UIState.buttonH + UIState.gap) * 3,
-      200,
+      UIState.buttonW,
       UIState.buttonH,
       "Pollution",
-      0,
-      100,
-      UIState.pollution
-    );
-  }
+      () -> UIState.activeMenu = MenuType.POLLUTION
+    ));
 
-  void addWidget(Widget w){
-    widgets.add(w);
+    subMenus.put(
+      MenuType.SPAWN,
+      new SpawnSubMenu(
+        subX,
+        UIState.sidebarY,
+        UIState.buttonW
+      )
+    );
+    
+    subMenus.put(
+      MenuType.CULL,
+      new CullSubMenu(
+        subX,
+        UIState.sidebarY + (UIState.buttonH + UIState.gap),
+        UIState.buttonW
+      )
+    );
+
+    subMenus.put(
+      MenuType.TEMPERATURE,
+      new TemperatureSubMenu(
+        subX,
+        UIState.sidebarY + (UIState.buttonH + UIState.gap) * 2,
+        UIState.buttonW
+      )
+    );
+
+    subMenus.put(
+      MenuType.POLLUTION,
+      new PollutionSubMenu(
+        subX,
+        UIState.sidebarY + (UIState.buttonH + UIState.gap) * 3,
+        UIState.buttonW
+      )
+    );
   }
 
   void render(){
 
-    // Toggle luôn render
     for(Widget w:widgets){
       if(w instanceof ToggleButton){
         w.render();
@@ -59,9 +113,7 @@ class Manager {
 
     if(!UIState.sidebarOpen) return;
 
-    // Main menu panel - fixed position
     fill(UIState.MENU_BG);
-    noStroke();
     rect(UIState.sidebarX, UIState.sidebarY, UIState.buttonW, (UIState.buttonH + UIState.gap) * 4);
 
     for(Widget w:widgets){
@@ -71,129 +123,42 @@ class Manager {
       }
     }
 
-    renderSubMenu();
-  }
-
-  void renderSubMenu(){
-    // ========== FIXED SUBMENU POSITIONING ==========
-    // All submenus render at fixed positions based on which menu is active
-    
-    float subX = UIState.sidebarX + UIState.buttonW; // Right of main panel (fixed: 200)
-    float subY;
-    
-    // Calculate submenu Y based on active menu (fixed offsets)
-    if(UIState.activeMenu == MenuType.SPAWN)
-      subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 0;
-    else if(UIState.activeMenu == MenuType.CULL)
-      subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 1;
-    else if(UIState.activeMenu == MenuType.TEMPERATURE)
-      subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 2;
-    else if(UIState.activeMenu == MenuType.POLLUTION)
-      subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 3;
-    else
-      return; // No submenu if no menu is active
-  
-    //  SPAWN 
-    if(UIState.activeMenu == MenuType.SPAWN){
-      SpawnType[] items = SpawnType.values();
-  
-      fill(UIState.MENU_BG);
-      rect(subX, subY, UIState.buttonW, (UIState.buttonH + UIState.gap) * items.length);
-  
-      for(int i=0;i<items.length;i++){
-  
-        float y=subY+i*(UIState.buttonH+UIState.gap);
-  
-        if(mouseX>subX && mouseX<subX+UIState.buttonW &&
-           mouseY>y && mouseY<y+UIState.buttonH){
-  
-          fill(UIState.MENU_HOVER);
-          rect(subX,y,UIState.buttonW,UIState.buttonH);
-        }
-  
-        fill(UIState.MENU_TEXT);
-        textAlign(LEFT,CENTER);
-        text(items[i].name(), subX+10, y+UIState.buttonH/2);
-      }
-    }
-    
-    // CULL
-    if(UIState.activeMenu == MenuType.CULL) {
-      fill(UIState.MENU_BG);
-      rect(subX, subY, UIState.buttonW, UIState.buttonH);
-    
-      fill(UIState.MENU_TEXT);
-      textAlign(LEFT, CENTER);
-      text("Click entity to delete", subX + 10, subY + UIState.buttonH/2);
-    }
-  
-    //  TEMPERATURE 
-    if(UIState.activeMenu == MenuType.TEMPERATURE){
-    
-      temperatureSlider.update();
-      temperatureSlider.render();
-    
-      UIState.temperature = temperatureSlider.value;
-    }
-
-  
-    //  POLLUTION 
-    if(UIState.activeMenu == MenuType.POLLUTION){
-    
-      pollutionSlider.update();
-      pollutionSlider.render();
-    
-      UIState.pollution = pollutionSlider.value;
-    }
-  }
-  boolean handleMouseClick(float mx,float my){
-
-  for(Widget w:widgets){
-    if(w.isHovered(mx,my)){
-      w.onClick();
-      return true;
+    SubMenu menu = subMenus.get(UIState.activeMenu);
+    if(menu != null){
+      menu.render();
     }
   }
 
-  float subX = UIState.sidebarX + UIState.buttonW;
-  float subY = UIState.sidebarY;
+  boolean handleMouseClick(float mx, float my){
 
-  if(UIState.activeMenu == MenuType.SPAWN)
-    subY = UIState.sidebarY;
-
-  if(UIState.activeMenu == MenuType.TEMPERATURE)
-    subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 2;
-
-  if(UIState.activeMenu == MenuType.POLLUTION)
-    subY = UIState.sidebarY + (UIState.buttonH + UIState.gap) * 3;
-
-  if(UIState.activeMenu == MenuType.SPAWN){
-
-    SpawnType[] items = SpawnType.values();
-
-    for(int i=0;i<items.length;i++){
-
-      float y = subY + i*(UIState.buttonH + UIState.gap);
-
-      if(mx>subX && mx<subX+UIState.buttonW &&
-         my>y && my<y+UIState.buttonH){
-
-        if(UIState.selectedSpawn == items[i]){
-          UIState.selectedSpawn = null;   // bỏ chọn tool
-          cursor(ARROW);
-        }
-        else{
-          UIState.selectedSpawn = items[i]; // chọn tool
-          cursor(UIState.getSpawnCursor(items[i]));
-        }
-      
+    for(Widget w : widgets){
+      if(w.isHovered(mx, my)){
+        w.onClick();
         return true;
       }
     }
+
+    SubMenu menu = subMenus.get(UIState.activeMenu);
+    if(menu != null){
+      return menu.handleMousePressed(mx, my);
+    }
+
+    return false;
   }
 
-  return false;
-}
+  void handleMouseReleased(){
+    SubMenu menu = subMenus.get(UIState.activeMenu);
+    if(menu != null){
+      menu.handleMouseReleased();
+    }
+  }
+
+  void handleMouseDragged(float mx, float my){
+    SubMenu menu = subMenus.get(UIState.activeMenu);
+    if(menu != null){
+      menu.handleMouseDragged(mx, my);
+    }
+  }
 }
 
 //toggle button
@@ -241,43 +206,31 @@ class Button implements Widget {
 
   float x,y,w,h;
   String label;
-  EventType eventType;
+  Runnable command;
 
-  Button(float x,float y,float w,float h,String label,EventType eventType){
-
+  Button(float x,float y,float w,float h,String label,Runnable command){
     this.x=x;
     this.y=y;
     this.w=w;
     this.h=h;
     this.label=label;
-    this.eventType=eventType;
+    this.command = command;
   }
 
   void update(){}
 
   void render(){
-
     if(isHovered(mouseX,mouseY)){
       fill(UIState.MENU_HOVER);
-    }
-    else{
+    } else {
       fill(UIState.MENU_BG);
     }
 
-    noStroke();
     rect(x,y,w,h);
 
     fill(UIState.MENU_TEXT);
     textAlign(LEFT,CENTER);
     text(label,x+10,y+h/2);
-
-    if(label.equals("Spawn Tool") ||
-       label.equals("Temperature") ||
-       label.equals("Pollution")){
-
-      textAlign(RIGHT,CENTER);
-      text(">",x+w-10,y+h/2);
-    }
   }
 
   boolean isHovered(float mx,float my){
@@ -285,45 +238,11 @@ class Button implements Widget {
   }
 
   void onClick(){
-
-    if(label.equals("Spawn Tool")){
-      UIState.activeMenu = UIState.activeMenu==MenuType.SPAWN ? MenuType.NONE : MenuType.SPAWN;
-      return;
+    if(command != null){
+      command.run();
     }
-    
-    if(label.equals("Cull Tool")){
-
-        UIState.activeMenu =
-          UIState.activeMenu == MenuType.CULL ? MenuType.NONE : MenuType.CULL;
-      
-        UIState.selectedSpawn = null;
-      
-        if(UIState.activeMenu == MenuType.CULL){ 
-          //UIState.selectedSpawn = null;
-          cursor(Assets.FISHING);
-        } else {
-          cursor(ARROW);
-        return;
-      }
-    }
-
-    if(label.equals("Temperature")){
-      UIState.activeMenu = UIState.activeMenu==MenuType.TEMPERATURE ? MenuType.NONE : MenuType.TEMPERATURE;
-      return;
-    }
-
-    if(label.equals("Pollution")){
-      UIState.activeMenu = UIState.activeMenu==MenuType.POLLUTION ? MenuType.NONE : MenuType.POLLUTION;
-      return;
-    }
-
-    systemBus.publish(
-      eventType,
-      new Object[]{label,null,null,null}
-    );
   }
 }
-
 // Slider
 class Slider implements Widget {
 
