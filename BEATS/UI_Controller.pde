@@ -38,7 +38,11 @@ class Controller implements IEventListener {
       return;
     }
     
-    IObject clickedObj = world.getObjectAt(mx, my);
+    // 2. WORLD-SPACE: Convert screen coordinates to world coordinates
+    PVector worldPos = camera.screenToWorld(mx, my);
+
+    // 3. Process world-space interactions (Spawn/Cull)
+    IObject clickedObj = world.getObjectAt(worldPos.x, worldPos.y);
 
     if (clickedObj != null) {
       println("Simulation Command: Selected Object");
@@ -46,8 +50,8 @@ class Controller implements IEventListener {
       systemBus.publish(EventType.EVENT_UI_TOOL_SELECTED, new Object[]{"CULL", null, null, null});
     } 
     else if (clickedObj == null && UIState.selectedSpawn != null) {
-      println("Simulation Command: Spawned " + UIState.selectedSpawn);
-      systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{UIState.selectedSpawn.name(), mx, my, null}
+      println("Simulation Command: Spawned " + UIState.selectedSpawn + " at " + worldPos);
+      systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{UIState.selectedSpawn.name(), worldPos.x, worldPos.y, null}
      );
     }
   }
@@ -94,33 +98,4 @@ class Controller implements IEventListener {
   void handleKeyReleased(int k, int kCode) {
     // Handle key release
   }
-}
-
-// Processing global input event hooks
-// These scatter events are corralled into the Controller bridge.
-
-void mousePressed() {
-  if (uiController != null) {
-    uiController.handleMousePressed(mouseX, mouseY, mouseButton);
-  }
-}
-
-void mouseReleased() {
-  if (uiController != null) {
-    uiController.handleMouseReleased(mouseX, mouseY, mouseButton);
-  }
-}
-
-void mouseDragged() {
-  if (uiController != null) {
-    uiController.handleMouseDragged(mouseX, mouseY);
-  }
-}
-
-void keyPressed() {
-  if (uiController != null) uiController.handleKeyPressed(key, keyCode);
-}
-
-void keyReleased() {
-  if (uiController != null) uiController.handleKeyReleased(key, keyCode);
 }

@@ -33,8 +33,8 @@ class EntityManager implements IEventListener {
 
   void run() {
     // Rebuild the spatial tree every frame to reflect updated positions
-    // Width and Height are based on PApplet's size() set in BEATS.pde
-    spatialTree = new QuadTree(0, 0, width, height);
+    // Task 2.2: Initialize the QuadTree with full world dimensions instead of screen dimensions
+    spatialTree = new QuadTree(0, 0, UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
 
     // First pass: Add all entities to the spatial tree
     for (IObject e : entities) {
@@ -42,16 +42,40 @@ class EntityManager implements IEventListener {
     }
 
     // Second pass: Update and Render
+    PVector camPos = camera.getPos();
     for (int i = entities.size() - 1; i >= 0; i--) {
       IObject e = entities.get(i);
+      
+      // Mandatory update for all entities
       e.update();
-      e.render();
+
+      // Task 3.2: Frustum Culling - Only render if visible
+      // Use a default radius of 30 for the check if the entity doesn't provide one
+      if (isVisible(e, camPos)) {
+        e.render();
+      }
 
       // Clean up dead entities
       if (e.isDead()) {
         entities.remove(i);
       }
     }
+  }
+
+  /**
+   * Task 3.1: Helper to check if an entity is within the camera's viewport.
+   */
+  boolean isVisible(IObject e, PVector camPos) {
+    // Assuming entities are BaseEntities with x, y coordinates
+    if (e instanceof BaseEntity) {
+      BaseEntity be = (BaseEntity) e;
+      float margin = 50; // Buffer for entity size
+      return be.x > camPos.x - margin && 
+             be.x < camPos.x + camera.w + margin && 
+             be.y > camPos.y - margin && 
+             be.y < camPos.y + camera.h + margin;
+    }
+    return true; // Render by default if type is unknown
   }
 
   /**

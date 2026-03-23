@@ -36,22 +36,30 @@ class FX_Manager implements IEventListener {
 
   // update, render particle mỗi frame
   void run() {
+    PVector camPos = camera.getPos();
 
     for(int i = particles.size()-1; i >= 0; i--) {
 
       FX_Particle p = particles.get(i);
 
       p.update();
-      p.render();
-
-      if(p.isDead()) {
-
-        particles.remove(i);
-
+      
+      // Task 3.3: Frustum Culling for particles
+      if (isVisible(p, camPos)) {
+        p.render();
       }
 
+      if(p.isDead()) {
+        particles.remove(i);
+      }
     }
-
   }
 
+  boolean isVisible(FX_Particle p, PVector camPos) {
+    float margin = 10; // Particles are small
+    return p.pos.x > camPos.x - margin && 
+           p.pos.x < camPos.x + camera.w + margin && 
+           p.pos.y > camPos.y - margin && 
+           p.pos.y < camPos.y + camera.h + margin;
+  }
 }
