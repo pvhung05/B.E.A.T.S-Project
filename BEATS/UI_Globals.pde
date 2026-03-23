@@ -17,6 +17,11 @@ static class UIState {
   static float temperature = 20;
   static float pollution = 10;
 
+  // World Simulation Boundaries
+  // TODO[@Sys-Design]: Load these values from environment_config.json
+  static float WORLD_WIDTH = 1280 * 3;
+  static float WORLD_HEIGHT = 720 * 3;
+
   static int MENU_BG;
   static int MENU_HOVER;
   static int MENU_TEXT;
