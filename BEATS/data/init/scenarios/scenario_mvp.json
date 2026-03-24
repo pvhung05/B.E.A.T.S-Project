@@ -1,0 +1,29 @@
+{
+  "name": "MVP Scenario",
+  "spawns": [
+    { 
+      "species": "ALGAE", 
+      "count": 100,
+      "region": { "x": 0.0, "y": 0.0, "w": 1.0, "h": 0.3 },
+      "initialEnergy": 1.0
+    },
+    { 
+      "species": "SARDINE", 
+      "count": 50,
+      "region": { "x": 0.2, "y": 0.2, "w": 0.6, "h": 0.6 },
+      "initialEnergy": 0.9
+    },
+    { 
+      "species": "SHARK", 
+      "count": 5,
+      "region": { "x": 0.4, "y": 0.4, "w": 0.5, "h": 0.5 },
+      "initialEnergy": 0.8
+    },
+    { 
+      "species": "CRAB", 
+      "count": 5,
+      "region": { "x": 0.0, "y": 0.8, "w": 1.0, "h": 0.2 },
+      "initialEnergy": 1.0
+    }
+  ]
+}

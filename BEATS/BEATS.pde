@@ -14,7 +14,32 @@ void setup() {
   UIState.initColors(this);
   Assets.load(this);
   frameRate(60);
-  
+
+  // --- BEGIN NEW CONFIG LOADING ---
+  try {
+    JSONObject config = loadJSONObject("data/config.json");
+    
+    // 1. Load UI and Global Params
+    UIState.loadConfig(this, config);
+    
+    // 2. Adjust frame rate from config
+    JSONObject appCfg = config.getJSONObject("app");
+    frameRate(appCfg.getInt("frameRate"));
+
+    // 3. Initialize Factory with species list
+    JSONObject registry = config.getJSONObject("registry");
+    EntityFactory.init(this, registry.getJSONArray("speciesList"));
+    
+    // 4. Load Initial Scenario
+    loadScenario("data/init/scenarios/scenario_mvp.json");
+    
+  } catch (Exception e) {
+    println("Critical Config Error: " + e.getMessage());
+    // Fallback if config is missing
+    EntityFactory.init(this, new JSONArray().append("shark").append("crab").append("algae").append("sardine"));
+  }
+  // --- END NEW CONFIG LOADING ---
+
   // Initialize Global Routing Hub First
   systemBus = new EventBus();
   
@@ -39,8 +64,41 @@ void setup() {
       isPaused = false;
     }
   });
-  
-  // TODO[@Sys-Design]: Trigger initial EVENT_ENTITY_SPAWN_REQUEST events by parsing data/scenario_01.json.
+}
+
+void loadScenario(String path) {
+  try {
+    JSONObject scenario = loadJSONObject(path);
+    JSONArray spawns = scenario.getJSONArray("spawns");
+    
+    for (int i = 0; i < spawns.size(); i++) {
+        JSONObject s = spawns.getJSONObject(i);
+        String species = s.getString("species");
+        int count = s.getInt("count");
+        float energy = s.hasKey("initialEnergy") ? s.getFloat("initialEnergy") : 1.0f;
+        
+        // Default to full world if no region specified
+        float spawnX = 50, spawnY = 50;
+        float spawnW = UIState.WORLD_WIDTH - 100;
+        float spawnH = UIState.WORLD_HEIGHT - 100;
+        
+        if (s.hasKey("region")) {
+            JSONObject reg = s.getJSONObject("region");
+            spawnX = reg.getFloat("x") * UIState.WORLD_WIDTH;
+            spawnY = reg.getFloat("y") * UIState.WORLD_HEIGHT;
+            spawnW = reg.getFloat("w") * UIState.WORLD_WIDTH;
+            spawnH = reg.getFloat("h") * UIState.WORLD_HEIGHT;
+        }
+        
+        for (int n = 0; n < count; n++) {
+            float rx = random(spawnX, spawnX + spawnW);
+            float ry = random(spawnY, spawnY + spawnH);
+            systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{species, rx, ry, energy});
+        }
+    }
+  } catch (Exception e) {
+    println("Scenario Loading Error: " + e.getMessage());
+  }
 }
 
 void draw() {
