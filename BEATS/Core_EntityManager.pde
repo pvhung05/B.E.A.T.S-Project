@@ -99,4 +99,3 @@ class EntityManager implements IEventListener {
     return null;
   }
 }
-
