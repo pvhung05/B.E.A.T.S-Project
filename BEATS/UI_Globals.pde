@@ -2,8 +2,7 @@
 static class UIState {
 
   static boolean sidebarOpen = false;
-  static boolean cullToolActive = false;
-
+  static boolean cullActive = false;
   static MenuType activeMenu = MenuType.NONE;
   static SpawnType selectedSpawn = null;
 
@@ -41,6 +40,12 @@ static class UIState {
     }
     return null;
   }
+  static PImage getCullCursor(CullType type){
+    switch(type){
+      case FISHING: return Assets.FISHING;
+    }
+    return null;
+  }
 }
 
 enum MenuType{
@@ -56,4 +61,8 @@ enum SpawnType{
   CRAB,
   SARDINE,
   SHARK
+}
+
+enum CullType{
+  FISHING
 }

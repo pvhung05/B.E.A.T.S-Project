@@ -2,7 +2,6 @@
 // The Input Bridge: Captures raw input and translates it into simulation commands.
 
 class Controller implements IEventListener {
-  Slider activeSlider;
 
   Controller() {
     systemBus.subscribe(EventType.EVENT_UI_TOOL_SELECTED, this);
@@ -15,25 +14,9 @@ class Controller implements IEventListener {
   }
 
   void handleMousePressed(float mx, float my, int mButton) {
-    // TODO[@UI]: Bind mouseDragged() to update the X/Y of the currently selected IObject. 
-    // Ensure z-index rendering doesn't overlap the generic HUD. Interface ONLY with EntityManager.
+    if (mButton != LEFT) return;
     
-    if (UIState.activeMenu == MenuType.TEMPERATURE &&
-        uiManager.temperatureSlider.isHovered(mx,my)){
-  
-      activeSlider = uiManager.temperatureSlider;
-      activeSlider.dragging = true;
-      return;
-    }
-  
-    if (UIState.activeMenu == MenuType.POLLUTION &&
-        uiManager.pollutionSlider.isHovered(mx,my)){
-  
-      activeSlider = uiManager.pollutionSlider;
-      activeSlider.dragging = true;
-      return;
-    }
-    
+    // 1. UI Handling: Let Manager handle Widgets and SubMenus
     if (uiManager.handleMouseClick(mx, my)) {
       return;
     }
@@ -45,9 +28,15 @@ class Controller implements IEventListener {
     IObject clickedObj = world.getObjectAt(worldPos.x, worldPos.y);
 
     if (clickedObj != null) {
-      println("Simulation Command: Selected Object");
-      // TODO[@UI]: Publish EVENT_UI_TOOL_SELECTED to the bus.
-      systemBus.publish(EventType.EVENT_UI_TOOL_SELECTED, new Object[]{"CULL", null, null, null});
+      if (UIState.cullActive) {
+         // Publish EVENT_ENTITY_DESTROYED as per EVENT_DICTIONARY.md: [String ID, Float X, Float Y, String Cause]
+         String id = clickedObj.getClass().getSimpleName().toUpperCase();
+         // Use worldPos as the interaction point
+         float targetX = worldPos.x;
+         float targetY = worldPos.y;
+         
+         systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, new Object[]{id, targetX, targetY, "CULL"});
+      }
     } 
     else if (clickedObj == null && UIState.selectedSpawn != null) {
       println("Simulation Command: Spawned " + UIState.selectedSpawn + " at " + worldPos);
@@ -55,38 +44,15 @@ class Controller implements IEventListener {
      );
     }
   }
+  
   void handleMouseReleased(float mx, float my, int mButton) {
-
-    if(activeSlider != null){
-      activeSlider.dragging = false;
-    }
-    activeSlider = null;
+    uiManager.handleMouseReleased();
   }
 
   void handleMouseDragged(float mx, float my) {
-  
-    if (activeSlider != null && activeSlider.dragging) {
-  
-      activeSlider.value = map(
-        mx,
-        activeSlider.x + 10,
-        activeSlider.x + activeSlider.w - 10,
-        activeSlider.minVal,
-        activeSlider.maxVal
-      );
-  
-      activeSlider.value = constrain(
-        activeSlider.value,
-        activeSlider.minVal,
-        activeSlider.maxVal
-      );
-  
-      systemBus.publish(
-        EventType.EVENT_UI_SLIDER_CHANGED,
-        new Object[]{activeSlider.label, activeSlider.value, null, null}
-      );
-    }
+    uiManager.handleMouseDragged(mx, my);
   }
+  
   void handleKeyPressed(int k, int kCode) {
     // Translate raw key press into simulation commands
     if (k == 'c' || k == 'C') {
