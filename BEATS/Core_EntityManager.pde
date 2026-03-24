@@ -17,13 +17,27 @@ class EntityManager implements IEventListener {
       float y = (Float) data[2];
 
       if (entityId.equals("CRAB")) {
-        entities.add(new Crab(x, y, 20.0f)); // Starting energy 20
+        entities.add(new Crab(x, y, 20.0f)); 
       } else if (entityId.equals("ALGAE")) {
         entities.add(new Algae(x, y, 10.0f, 40.0f, 0.0f, 0.3f)); 
+      } else if (entityId.equals("SARDINE")) {
+        entities.add(new Sardine(x, y, 15.0f));
+      } else if (entityId.equals("SHARK")) {
+        entities.add(new Shark(x, y, 100.0f));
       }
-      // TODO: Add cases for SARDINE and SHARK
     } else if (type == EventType.EVENT_ENTITY_DESTROYED) {
-      // Logic for safe removal
+      Object[] data = (Object[]) payload;
+      float x = (Float) data[1];
+      float y = (Float) data[2];
+      
+      // Mark entity at this location as dead if it's there
+      for (IObject e : entities) {
+        if (e.isSelected(x, y)) {
+          if (e instanceof BaseEntity) {
+            ((BaseEntity)e).dead = true;
+          }
+        }
+      }
     }
   }
 

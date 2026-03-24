@@ -27,15 +27,11 @@ class Controller implements IEventListener {
     // 3. Process world-space interactions (Spawn/Cull)
     IObject clickedObj = world.getObjectAt(worldPos.x, worldPos.y);
 
-    if (clickedObj != null) {
-      if (UIState.cullActive) {
-         // Publish EVENT_ENTITY_DESTROYED as per EVENT_DICTIONARY.md: [String ID, Float X, Float Y, String Cause]
-         String id = clickedObj.getClass().getSimpleName().toUpperCase();
-         // Use worldPos as the interaction point
-         float targetX = worldPos.x;
-         float targetY = worldPos.y;
-         
-         systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, new Object[]{id, targetX, targetY, "CULL"});
+    if (UIState.cullActive) {
+      if (clickedObj != null && clickedObj instanceof BaseEntity) {
+         BaseEntity be = (BaseEntity) clickedObj;
+         String id = be.getClass().getSimpleName().toUpperCase();
+         systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, new Object[]{id, be.x, be.y, "CULL"});
       }
     } 
     else if (clickedObj == null && UIState.selectedSpawn != null) {
