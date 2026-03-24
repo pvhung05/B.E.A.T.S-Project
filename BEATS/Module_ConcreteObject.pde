@@ -45,7 +45,19 @@ final class Crab extends Decomposer {
     @Override
     void render() {
         if (isDead()) return;
-        // TODO: implement rendering logic for crab
+        pushStyle();
+        fill(180, 80, 50);
+        stroke(100, 40, 20);
+        rectMode(CENTER);
+        rect(x, y, 25, 15, 4);
+        line(x-12, y-7, x-18, y-12);
+        line(x+12, y-7, x+18, y-12);
+        popStyle();
+    }
+
+    @Override
+    boolean isSelected(float mx, float my) {
+        return dist(mx, my, x, y) < 15;
     }
 
     @Override
@@ -99,7 +111,18 @@ final class Algae extends Producer {
     @Override
     void render() {
         if (isDead()) return;
-        // TODO: render algae shape
+        pushStyle();
+        noStroke();
+        fill(60, 180, 80, 200);
+        ellipse(x, y, 12, 12);
+        fill(40, 140, 60, 150);
+        ellipse(x, y-5, 8, 12);
+        popStyle();
+    }
+
+    @Override
+    boolean isSelected(float mx, float my) {
+        return dist(mx, my, x, y) < 10;
     }
 
     @Override

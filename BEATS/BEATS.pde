@@ -19,7 +19,7 @@ void setup() {
   systemBus = new EventBus();
   
   // Initialize Global Camera
-  camera = new Camera(width/2, height/2, width, height);
+  camera = new Camera(UIState.WORLD_WIDTH/2, UIState.WORLD_HEIGHT/2, width, height);
   
   // Initialize Subscribers (Subscribers handle their own bus registration in constructors)
   world = new EntityManager();
@@ -39,12 +39,6 @@ void setup() {
       isPaused = false;
     }
   });
-  
-  uiManager.addWidget(new ToggleButton(5, UIState.sidebarY, 30));
-  uiManager.addWidget(new Button(UIState.sidebarX,UIState.sidebarY,UIState.buttonW,UIState.buttonH,"Spawn Tool",EventType.EVENT_UI_TOOL_SELECTED));
-  uiManager.addWidget(new Button(UIState.sidebarX,UIState.sidebarY+(UIState.buttonH+UIState.gap)*1,UIState.buttonW,UIState.buttonH,"Cull Tool",EventType.EVENT_UI_TOOL_SELECTED));
-  uiManager.addWidget(new Button(UIState.sidebarX,UIState.sidebarY+(UIState.buttonH+UIState.gap)*2,UIState.buttonW,UIState.buttonH,"Temperature",EventType.EVENT_UI_TOOL_SELECTED));
-  uiManager.addWidget(new Button(UIState.sidebarX,UIState.sidebarY+(UIState.buttonH+UIState.gap)*3,UIState.buttonW,UIState.buttonH,"Pollution",EventType.EVENT_UI_TOOL_SELECTED));
   
   // TODO[@Sys-Design]: Trigger initial EVENT_ENTITY_SPAWN_REQUEST events by parsing data/scenario_01.json.
 }
