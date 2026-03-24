@@ -113,23 +113,27 @@ void displayDebugInfo() {
 // These scatter events are corralled into the Controller bridge.
 
 void mousePressed() {
+  if (uiController != null) {
+    uiController.handleMousePressed(mouseX, mouseY, mouseButton);
+  }
+  
   if (mouseButton == RIGHT) {
     camera.startDrag(mouseX, mouseY);
-  } else if (uiController != null) {
-    uiController.handleMousePressed(mouseX, mouseY, mouseButton);
   }
 }
 
 void mouseReleased() {
+  if (uiController != null) {
+    uiController.handleMouseReleased(mouseX, mouseY, mouseButton);
+  }
+  
   if (mouseButton == RIGHT) {
     camera.stopDrag();
-  } else if (uiController != null) {
-    uiController.handleMouseReleased(mouseX, mouseY, mouseButton);
   }
 }
 
 void mouseDragged() {
-  if (mouseButton == RIGHT) {
+  if (camera != null && camera.isDragging) {
     camera.drag(mouseX, mouseY);
   } else if (uiController != null) {
     uiController.handleMouseDragged(mouseX, mouseY);
