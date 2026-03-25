@@ -1,97 +1,92 @@
 /**
  * Core_Camera.pde
- * Manages the simulation's viewport and coordinate transformations.
- * Implements IObject to allow for potential debugging and integration with core loops.
+ * Manages the simulation's viewport and coordinate transformations using Processing's matrix system.
+ * Refactored to leverage built-in PMatrix2D for precision and decoupling.
  */
 class Camera implements IObject {
   PVector center;
-  float w, h;
+  float viewportScale = 1.0f; // 1.0 = 100% zoom level (1 pixel world = 1 pixel screen)
+  
   float baseW, baseH;
-  float viewportScale = 1.0f; // 1.0 = 100% of base resolution
+  float w, h; // Current world-space width/height of viewport
+  
+  PMatrix2D matrix = new PMatrix2D();
   
   boolean isDragging;
   PVector lastMouse;
 
-  Camera(float startX, float startY, float viewportW, float viewportH) {
+  Camera(float startX, float startY, float vW, float vH) {
     center = new PVector(startX, startY);
-    baseW = viewportW;
-    baseH = viewportH;
-    w = baseW;
-    h = baseH;
+    baseW = vW;
+    baseH = vH;
     isDragging = false;
     lastMouse = new PVector();
+    update();
   }
 
-  // Calculate the top-left corner of the camera in world space
-  PVector getPos() {
-    return new PVector(center.x - w * 0.5f, center.y - h * 0.5f);
-  }
-
+  /**
+   * Updates viewport dimensions and recalculates the transformation matrix.
+   */
   void update() {
-    // Maintain aspect ratio and update w/h based on scale
+    // World size of the viewport: as we zoom in (scale < 1), we see less of the world
     w = baseW * viewportScale;
     h = baseH * viewportScale;
 
-    // Basic clamping to world boundaries
-    // Ensure we don't pan out of bounds, but also don't zoom out further than the world size
-    float minW = UIState.WORLD_WIDTH;
-    float minH = UIState.WORLD_HEIGHT;
-    
-    // If the camera is larger than the world, center it and disable panning
-    if (w > UIState.WORLD_WIDTH) {
+    // Clamping: Ensure camera doesn't pan outside world boundaries
+    if (w >= UIState.WORLD_WIDTH) {
        center.x = UIState.WORLD_WIDTH * 0.5f;
     } else {
        center.x = constrain(center.x, w * 0.5f, UIState.WORLD_WIDTH - w * 0.5f);
     }
     
-    if (h > UIState.WORLD_HEIGHT) {
+    if (h >= UIState.WORLD_HEIGHT) {
        center.y = UIState.WORLD_HEIGHT * 0.5f;
     } else {
        center.y = constrain(center.y, h * 0.5f, UIState.WORLD_HEIGHT - h * 0.5f);
     }
+
+    // Recalculate Matrix: Screen = Matrix * World
+    // 1. Center the view on screen
+    // 2. Scale by inverse of viewportScale (zoom in = larger scale)
+    // 3. Offset by negative camera world position
+    matrix.reset();
+    matrix.translate(baseW / 2.0f, baseH / 2.0f);
+    matrix.scale(1.0f / viewportScale);
+    matrix.translate(-center.x, -center.y);
   }
 
-  void render() {
-    // Debug view: Draw the camera center or boundaries in screen space if needed
+  /**
+   * Applies the camera's transformation matrix to the current PApplet/PGraphics context.
+   */
+  void apply(PGraphics g) {
+    g.applyMatrix(matrix);
   }
 
-  boolean isSelected(float mx, float my) {
-    return false; // Camera itself cannot be selected in the simulation
+  /**
+   * Calculates the top-left corner of the camera in world space.
+   * Useful for frustum culling.
+   */
+  PVector getPos() {
+    return new PVector(center.x - w * 0.5f, center.y - h * 0.5f);
   }
 
-  boolean isDead() {
-    return false; // Camera exists for the duration of the application
-  }
-
-  // Coordinate Transformations
-  // Formula: world = (screen / screen_dim) * camera_dim + camera_top_left
-  // Since Processing's translate() handles the visual mapping, we only need to map 
-  // raw screen mouse coords to world coords here.
+  /**
+   * Converts screen coordinates (pixels) to world coordinates.
+   * Uses inverted matrix for precision.
+   */
   PVector screenToWorld(float sx, float sy) {
-    PVector pos = getPos();
-    // sx/sy are in pixels from 0..width, 0..height.
-    // We need to scale these relative to the current camera viewport size.
-    float normalizedX = sx / baseW;
-    float normalizedY = sy / baseH;
-    
-    return new PVector(
-      pos.x + normalizedX * w,
-      pos.y + normalizedY * h
-    );
+    PMatrix2D inv = matrix.get();
+    inv.invert();
+    return new PVector(inv.multX(sx, sy), inv.multY(sx, sy));
   }
 
+  /**
+   * Converts world coordinates to screen coordinates (pixels).
+   */
   PVector worldToScreen(float wx, float wy) {
-    PVector pos = getPos();
-    float normalizedX = (wx - pos.x) / w;
-    float normalizedY = (wy - pos.y) / h;
-    
-    return new PVector(
-      normalizedX * baseW,
-      normalizedY * baseH
-    );
+    return new PVector(matrix.multX(wx, wy), matrix.multY(wx, wy));
   }
 
-  // Interaction Logic
   void startDrag(float mx, float my) {
     isDragging = true;
     lastMouse.set(mx, my);
@@ -99,7 +94,7 @@ class Camera implements IObject {
 
   void drag(float mx, float my) {
     if (isDragging) {
-      // Dragging needs to be proportional to the zoom level
+      // Delta in screen space, scaled by viewport level to move correctly in world space
       float dx = (mx - lastMouse.x) * viewportScale;
       float dy = (my - lastMouse.y) * viewportScale;
       
@@ -115,11 +110,15 @@ class Camera implements IObject {
   }
 
   void handleZoom(float count) {
-    // count is negative for scroll up (zoom in), positive for scroll down (zoom out)
     viewportScale += count * UIState.ZOOM_SPEED;
     
-    // Clamp zoom: Min zoom, Max zoom (fit world)
+    // Max scale defined by world bounds (cannot zoom out more than world size)
     float maxScale = min(UIState.WORLD_WIDTH / baseW, UIState.WORLD_HEIGHT / baseH);
     viewportScale = constrain(viewportScale, UIState.MIN_SCALE, maxScale);
   }
+  
+  // IObject implementation stubs
+  void render() { /* Debug markers could go here */ }
+  boolean isSelected(float mx, float my) { return false; }
+  boolean isDead() { return false; }
 }

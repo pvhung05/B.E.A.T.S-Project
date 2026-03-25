@@ -15,15 +15,11 @@ class EntityManager implements IEventListener {
       String entityId = (String) data[0];
       float x = (Float) data[1];
       float y = (Float) data[2];
+      float initialEnergyPct = data.length > 3 && data[3] != null ? (Float) data[3] : -1.0f;
 
-      if (entityId.equals("CRAB")) {
-        entities.add(new Crab(x, y, 20.0f)); 
-      } else if (entityId.equals("ALGAE")) {
-        entities.add(new Algae(x, y, 10.0f, 40.0f, 0.0f, 0.3f)); 
-      } else if (entityId.equals("SARDINE")) {
-        entities.add(new Sardine(x, y, 15.0f));
-      } else if (entityId.equals("SHARK")) {
-        entities.add(new Shark(x, y, 100.0f));
+      Organism e = entityFactory.spawn(entityId, x, y, initialEnergyPct);
+      if (e != null) {
+        entities.add(e);
       }
     } else if (type == EventType.EVENT_ENTITY_DESTROYED) {
       Object[] data = (Object[]) payload;
