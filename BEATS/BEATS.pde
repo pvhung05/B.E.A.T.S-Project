@@ -1,6 +1,7 @@
 EventBus systemBus;
 EntityManager world;
 Camera camera;
+ConfigLoader configLoader;
 Controller uiController;
 Manager uiManager;
 FX_Manager fxManager;
@@ -17,7 +18,9 @@ void setup() {
   
   // Initialize Global Routing Hub First
   systemBus = new EventBus();
-  
+
+  configLoader = new ConfigLoader();
+
   // Initialize Global Camera
   camera = new Camera(UIState.WORLD_WIDTH/2, UIState.WORLD_HEIGHT/2, width, height);
   
