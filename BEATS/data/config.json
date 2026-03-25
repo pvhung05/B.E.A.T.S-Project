@@ -8,7 +8,7 @@
   },
   "world": {
     "dimensions": {
-      "width": 3840,
+      "width": 9000,
       "height": 2160
     },
     "initialParameters": {
@@ -27,9 +27,21 @@
   },
   "ui": {
     "colors": {
-      "menuBg": [37, 37, 38],
-      "menuHover": [62, 62, 64],
-      "menuText": [220, 220, 220]
+      "menuBg": [
+        37,
+        37,
+        38
+      ],
+      "menuHover": [
+        62,
+        62,
+        64
+      ],
+      "menuText": [
+        220,
+        220,
+        220
+      ]
     },
     "layout": {
       "sidebarX": 40,
@@ -40,6 +52,11 @@
     }
   },
   "registry": {
-    "speciesList": ["shark", "crab", "algae", "sardine"]
+    "speciesList": [
+      "shark",
+      "crab",
+      "algae",
+      "sardine"
+    ]
   }
 }

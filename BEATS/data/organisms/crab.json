@@ -1,35 +1,32 @@
 {
-"name": "crab",
-"type": "decomposer",
-
-"energy": {
-"maxEnergy": 50,
-"metabolismRate": 0.1,
-"energyGain": 20
-},
-
-"movement": {
-"speed": 0.5,
-"turnRate": 0.2
-},
-
-"ecology": {
-"minDepth": 0.75,
-"maxDepth": 1.0,
-"minWidth": 0.0,
-"maxWidth": 0.6,
-"minTemperature": 5,
-"maxTemperature": 30,
-"pollutionTolerance": 0.5
-},
-
-"feeding": {
-"food": ["dead"],
-"visionRadius": 70,
-"consumeRadius": 10
-},
-
-"reproduction": {
-"energyThreshold": 40
-}
+    "name": "crab",
+    "type": "decomposer",
+    "energy": {
+        "maxEnergy": 50,
+        "metabolismRate": 0.1,
+        "energyGain": 20
+    },
+    "movement": {
+        "speed": 0.5,
+        "turnRate": 0.2
+    },
+    "ecology": {
+        "minDepth": 0.75,
+        "maxDepth": 1.0,
+        "minWidth": 0.0,
+        "maxWidth": 0.6,
+        "minTemperature": 5,
+        "maxTemperature": 30,
+        "pollutionTolerance": 0.5
+    },
+    "feeding": {
+        "food": [
+            "dead"
+        ],
+        "visionRadius": 70,
+        "consumeRadius": 10
+    },
+    "reproduction": {
+        "energyThreshold": 40
+    }
 }
