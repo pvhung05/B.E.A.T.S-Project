@@ -1,9 +1,11 @@
 class EntityManager implements IEventListener {
   ArrayList<IObject> entities;
   QuadTree spatialTree;
+  Logic simulationLogic;
 
   EntityManager() {
     entities = new ArrayList<IObject>();
+    simulationLogic = new Logic();
     // Mandatory Subscriptions
     systemBus.subscribe(EventType.EVENT_ENTITY_SPAWN_REQUEST, this);
     systemBus.subscribe(EventType.EVENT_ENTITY_DESTROYED, this);
@@ -50,6 +52,9 @@ class EntityManager implements IEventListener {
     for (IObject e : entities) {
       spatialTree.insert(e);
     }
+
+    // Logic Pass: Process relationships and environment
+    simulationLogic.processRules(entities, spatialTree);
 
     // Second pass: Update and Render
     PVector camPos = camera.getPos();

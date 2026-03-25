@@ -29,8 +29,19 @@ abstract class Organism extends BaseEntity {
   }
 
   void checkReproduction() {
-    // TODO: implement reproduction logic based on energy level.
-    // When energyLevel >= reproductionEnergyThreshold, spawn a new instance of the same species.
+    if (energyLevel >= reproductionEnergyThreshold) {
+      // Split energy
+      energyLevel *= 0.5f;
+      
+      // Spawn offspring nearby with a slight offset
+      String speciesName = this.getClass().getSimpleName().toUpperCase();
+      systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{
+          speciesName, 
+          x + random(-10, 10), 
+          y + random(-10, 10), 
+          0.5f // Offspring starts with 50% energy
+      });
+    }
   }
 
 
