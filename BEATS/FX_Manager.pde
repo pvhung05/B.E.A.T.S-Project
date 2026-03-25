@@ -17,7 +17,6 @@ class FX_Manager implements IEventListener {
     }
   }
 
-  /** loc: world space */
   void spawnParticles(PVector loc) {
     for (int i = 0; i < 20; i++) {
       particles.add(new FX_RandomParticle(loc.copy()));
@@ -32,60 +31,69 @@ class FX_Manager implements IEventListener {
       o.add(PVector.random2D().mult(random(2, 8) * intensity));
       int r = 255, g = 120, b = 60;
       if ("POLLUTION".equals(mode)) {
-        r = 80;
-        g = 200;
-        b = 120;
+        r = 80; g = 200; b = 120;
       } else if ("BOTH".equals(mode)) {
-        r = 200;
-        g = 80;
-        b = 200;
+        r = 200; g = 80; b = 200;
       }
       particles.add(new FX_StressParticle(o, r, g, b));
     }
   }
 
-  void run() {
-    PVector camPos = camera.getPos();
-
+  /**
+   * Decoupled Update Pass: Lifecycle and Stress logic.
+   */
+  void update() {
+    // 1. Particle Lifecycle
     for (int i = particles.size() - 1; i >= 0; i--) {
       FX_Particle p = particles.get(i);
       p.update();
-      
-      // Task 3.3: Frustum Culling for particles
-      if (isVisible(p, camPos)) {
-        p.render();
-      }
-
       if(p.isDead()) {
         particles.remove(i);
       }
     }
 
+    // 2. Stress State Logic
     if (world != null) {
-      updateAndDrawStress();
+      updateStressState();
     }
   }
 
-  void updateAndDrawStress() {
+  /**
+   * Decoupled Render Pass: Visual output and culling.
+   */
+  void render() {
     PVector camPos = camera.getPos();
-    float margin = 50; // Margin for off-screen stress checks
 
-    pushStyle();
+    // 1. Draw Particles
+    for (FX_Particle p : particles) {
+      if (isVisible(p, camPos)) {
+        p.render();
+      }
+    }
+
+    // 2. Draw Stress FX
+    if (world != null) {
+      drawStressFX(camPos);
+    }
+  }
+
+  void updateStressState() {
+    PVector camPos = camera.getPos();
+    float margin = 50;
+
     for (int i = 0; i < world.entities.size(); i++) {
       IObject o = world.entities.get(i);
       if (!(o instanceof BaseEntity)) continue;
       BaseEntity be = (BaseEntity)o;
       if (be.isDead()) continue;
 
-      // Optimization: Only process entities near or on screen
+      // Logic Culling
       if (be.x < camPos.x - margin || be.x > camPos.x + camera.w + margin ||
           be.y < camPos.y - margin || be.y > camPos.y + camera.h + margin) {
         continue;
       }
 
       float stress = envVisuals.stressFactor(be.x, be.y);
-      
-      // Update Stress Particles
       if (stress >= 0.35f) {
         int id = System.identityHashCode(be);
         Integer last = stressFxCooldown.get(id);
@@ -95,8 +103,23 @@ class FX_Manager implements IEventListener {
           spawnStressBurst(new PVector(be.x, be.y), stress, mode);
         }
       }
+    }
+  }
 
-      // Draw Stress Rings (World Space)
+  void drawStressFX(PVector camPos) {
+    float margin = 50;
+    pushStyle();
+    for (int i = 0; i < world.entities.size(); i++) {
+      IObject o = world.entities.get(i);
+      if (!(o instanceof BaseEntity)) continue;
+      BaseEntity be = (BaseEntity)o;
+
+      if (be.x < camPos.x - margin || be.x > camPos.x + camera.w + margin ||
+          be.y < camPos.y - margin || be.y > camPos.y + camera.h + margin) {
+        continue;
+      }
+
+      float stress = envVisuals.stressFactor(be.x, be.y);
       if (stress >= 0.05f) {
         float pulse = 14 + sin(frameCount * 0.18f) * 5f + stress * 18f;
         noFill();
@@ -113,7 +136,7 @@ class FX_Manager implements IEventListener {
   }
 
   boolean isVisible(FX_Particle p, PVector camPos) {
-    float margin = 10; // Particles are small
+    float margin = 10;
     return p.pos.x > camPos.x - margin && 
            p.pos.x < camPos.x + camera.w + margin && 
            p.pos.y > camPos.y - margin && 

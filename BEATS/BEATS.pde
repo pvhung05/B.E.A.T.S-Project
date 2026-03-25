@@ -99,7 +99,9 @@ void draw() {
   background(240);
   
   // Update camera state (clamping, matrix recalculation)
-  camera.update();
+  // ========== UPDATE LOGIC ==========
+  world.update();
+  fxManager.update();
   
   // ========== WORLD-SPACE RENDERING ==========
   pushMatrix();
@@ -108,8 +110,8 @@ void draw() {
   camera.apply(g);
   
   drawWorldMarkers();
-  world.run(); // EntityManager.run handles update and render within spatial partitioning
-  fxManager.run();
+  world.render(); 
+  fxManager.render();
   
   popMatrix();
   
