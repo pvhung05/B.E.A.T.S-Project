@@ -116,11 +116,10 @@ class Camera implements IObject {
 
   void handleZoom(float count) {
     // count is negative for scroll up (zoom in), positive for scroll down (zoom out)
-    float zoomSpeed = 0.05f;
-    viewportScale += count * zoomSpeed;
+    viewportScale += count * UIState.ZOOM_SPEED;
     
-    // Clamp zoom: Min zoom (0.25x size = 4x magnification), Max zoom (fit world or 4x base size)
+    // Clamp zoom: Min zoom, Max zoom (fit world)
     float maxScale = min(UIState.WORLD_WIDTH / baseW, UIState.WORLD_HEIGHT / baseH);
-    viewportScale = constrain(viewportScale, 0.25f, maxScale);
+    viewportScale = constrain(viewportScale, UIState.MIN_SCALE, maxScale);
   }
 }
