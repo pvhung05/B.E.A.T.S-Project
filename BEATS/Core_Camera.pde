@@ -59,7 +59,8 @@ class Camera implements IObject {
    * Applies the camera's transformation matrix to the current PApplet/PGraphics context.
    */
   void apply(PGraphics g) {
-    g.applyMatrix(matrix);
+    g.applyMatrix(matrix.m00, matrix.m01, matrix.m02, 
+                  matrix.m10, matrix.m11, matrix.m12);
   }
 
   /**
@@ -101,6 +102,7 @@ class Camera implements IObject {
       center.x -= dx;
       center.y -= dy;
       
+      update();
       lastMouse.set(mx, my);
     }
   }
@@ -113,8 +115,9 @@ class Camera implements IObject {
     viewportScale += count * UIState.ZOOM_SPEED;
     
     // Max scale defined by world bounds (cannot zoom out more than world size)
-    float maxScale = min(UIState.WORLD_WIDTH / baseW, UIState.WORLD_HEIGHT / baseH);
+    float maxScale = max(UIState.WORLD_WIDTH / baseW, UIState.WORLD_HEIGHT / baseH);
     viewportScale = constrain(viewportScale, UIState.MIN_SCALE, maxScale);
+    update();
   }
   
   // IObject implementation stubs

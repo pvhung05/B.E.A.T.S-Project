@@ -100,6 +100,7 @@ void draw() {
   
   // Update camera state (clamping, matrix recalculation)
   // ========== UPDATE LOGIC ==========
+  camera.update();
   world.update();
   fxManager.update();
   
