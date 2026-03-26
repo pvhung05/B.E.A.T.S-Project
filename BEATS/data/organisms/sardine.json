@@ -1,42 +1,38 @@
 {
-"name": "sardine",
-"type": "consumer",
-
-"energy": {
-"maxEnergy": 60,
-"metabolismRate": 0.15,
-"hungerThreshold": 30,
-"energyGain": 10
-},
-
-"movement": {
-"speed": 1.5,
-"turnRate": 0.15
-},
-
-"schooling": {
-"radius": 60,
-"alignmentWeight": 1.0,
-"cohesionWeight": 0.8,
-"separationWeight": 1.2
-},
-
-"ecology": {
-"minDepth": 0.1,
-"maxDepth": 0.6,
-"minWidth": 0.2,
-"maxWidth": 0.9,
-"minTemperature": 8,
-"maxTemperature": 30,
-"pollutionTolerance": 0.4
-},
-
-"feeding": {
-"food": ["algae"],
-"visionRadius": 80
-},
-
-"reproduction": {
-"energyThreshold": 50
-}
+    "name": "sardine",
+    "type": "consumer",
+    "energy": {
+        "maxEnergy": 60,
+        "metabolismRate": 0.15,
+        "hungerThreshold": 30,
+        "energyGain": 10
+    },
+    "movement": {
+        "speed": 1.5,
+        "turnRate": 0.15
+    },
+    "schooling": {
+        "radius": 60,
+        "alignmentWeight": 1.0,
+        "cohesionWeight": 0.8,
+        "separationWeight": 1.2
+    },
+    "ecology": {
+        "minDepth": 0.1,
+        "maxDepth": 0.6,
+        "minWidth": 0.2,
+        "maxWidth": 0.9,
+        "minTemperature": 8,
+        "maxTemperature": 30,
+        "pollutionTolerance": 0.4
+    },
+    "feeding": {
+        "food": [
+            "algae"
+        ],
+        "visionRadius": 80
+    },
+    "reproduction": {
+        "energyThreshold": 50
+    }
 }

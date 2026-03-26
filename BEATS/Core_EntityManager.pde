@@ -1,9 +1,11 @@
 class EntityManager implements IEventListener {
   ArrayList<IObject> entities;
   QuadTree spatialTree;
+  Logic simulationLogic;
 
   EntityManager() {
     entities = new ArrayList<IObject>();
+    simulationLogic = new Logic();
     // Mandatory Subscriptions
     systemBus.subscribe(EventType.EVENT_ENTITY_SPAWN_REQUEST, this);
     systemBus.subscribe(EventType.EVENT_ENTITY_DESTROYED, this);
@@ -15,15 +17,11 @@ class EntityManager implements IEventListener {
       String entityId = (String) data[0];
       float x = (Float) data[1];
       float y = (Float) data[2];
+      float initialEnergyPct = data.length > 3 && data[3] != null ? (Float) data[3] : -1.0f;
 
-      if (entityId.equals("CRAB")) {
-        entities.add(new Crab(x, y, 20.0f)); 
-      } else if (entityId.equals("ALGAE")) {
-        entities.add(new Algae(x, y, 10.0f, 40.0f, 0.0f, 0.3f)); 
-      } else if (entityId.equals("SARDINE")) {
-        entities.add(new Sardine(x, y, 15.0f));
-      } else if (entityId.equals("SHARK")) {
-        entities.add(new Shark(x, y, 100.0f));
+      Organism e = entityFactory.spawn(entityId, x, y, initialEnergyPct);
+      if (e != null) {
+        entities.add(e);
       }
     } else if (type == EventType.EVENT_ENTITY_DESTROYED) {
       Object[] data = (Object[]) payload;
@@ -45,31 +43,25 @@ class EntityManager implements IEventListener {
     entities.add(e);
   }
 
-  void run() {
-    // Rebuild the spatial tree every frame to reflect updated positions
-    // Task 2.2: Initialize the QuadTree with full world dimensions instead of screen dimensions
+  /**
+   * Decoupled Update Pass: Handles physics, logic, and lifecycle.
+   */
+  void update() {
+    // 1. Rebuild spatial partitioning
     spatialTree = new QuadTree(0, 0, UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
-
-    // First pass: Add all entities to the spatial tree
     for (IObject e : entities) {
       spatialTree.insert(e);
     }
 
-    // Second pass: Update and Render
-    PVector camPos = camera.getPos();
+    // 2. Global Logic Pass (Tier 2 & 3)
+    simulationLogic.processRules(entities, spatialTree);
+
+    // 3. Local Entity Updates & Lifecycle
     for (int i = entities.size() - 1; i >= 0; i--) {
       IObject e = entities.get(i);
-      
-      // Mandatory update for all entities
       e.update();
-
-      // Task 3.2: Frustum Culling - Only render if visible
-      // Use a default radius of 30 for the check if the entity doesn't provide one
-      if (isVisible(e, camPos)) {
-        e.render();
-      }
-
-      // Clean up dead entities
+      
+      // Remove dead entities during the update pass
       if (e.isDead()) {
         entities.remove(i);
       }
@@ -77,25 +69,30 @@ class EntityManager implements IEventListener {
   }
 
   /**
-   * Task 3.1: Helper to check if an entity is within the camera's viewport.
+   * Decoupled Render Pass: Handles drawing and frustum culling.
    */
+  void render() {
+    PVector camPos = camera.getPos();
+    for (IObject e : entities) {
+      // Frustum Culling - Only render if visible
+      if (isVisible(e, camPos)) {
+        e.render();
+      }
+    }
+  }
+
   boolean isVisible(IObject e, PVector camPos) {
-    // Assuming entities are BaseEntities with x, y coordinates
     if (e instanceof BaseEntity) {
       BaseEntity be = (BaseEntity) e;
-      float margin = 50; // Buffer for entity size
+      float margin = 50; 
       return be.x > camPos.x - margin && 
              be.x < camPos.x + camera.w + margin && 
              be.y > camPos.y - margin && 
              be.y < camPos.y + camera.h + margin;
     }
-    return true; // Render by default if type is unknown
+    return true;
   }
 
-  /**
-   * High-performance spatial query using the QuadTree.
-   * Use this for schooling, hunting, and collision detection.
-   */
   ArrayList<IObject> getEntitiesInRange(float x, float y, float radius) {
     ArrayList<IObject> results = new ArrayList<IObject>();
     if (spatialTree != null) {
@@ -105,8 +102,7 @@ class EntityManager implements IEventListener {
   }
 
   IObject getObjectAt(float mx, float my) {
-    // Optimization: Use QuadTree to find objects at coordinates instead of O(N) loop
-    ArrayList<IObject> potential = getEntitiesInRange(mx, my, 5.0f); // Small 5px radius for clicking
+    ArrayList<IObject> potential = getEntitiesInRange(mx, my, 5.0f);
     for (IObject e : potential) {
       if (e.isSelected(mx, my)) return e;
     }

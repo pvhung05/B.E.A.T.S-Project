@@ -1,0 +1,62 @@
+{
+  "app": {
+    "frameRate": 60,
+    "windowSize": {
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "world": {
+    "dimensions": {
+      "width": 9000,
+      "height": 2160
+    },
+    "initialParameters": {
+      "temperature": 20.0,
+      "pollution": 10.0
+    }
+  },
+  "environmentLogic": {
+    "optimalTempMin": 16.0,
+    "optimalTempMax": 26.0,
+    "pollutionStressThreshold": 38.0
+  },
+  "camera": {
+    "zoomSpeed": 0.05,
+    "minScale": 0.25
+  },
+  "ui": {
+    "colors": {
+      "menuBg": [
+        37,
+        37,
+        38
+      ],
+      "menuHover": [
+        62,
+        62,
+        64
+      ],
+      "menuText": [
+        220,
+        220,
+        220
+      ]
+    },
+    "layout": {
+      "sidebarX": 40,
+      "sidebarY": 70,
+      "buttonW": 160,
+      "buttonH": 30,
+      "gap": 2
+    }
+  },
+  "registry": {
+    "speciesList": [
+      "shark",
+      "crab",
+      "algae",
+      "sardine"
+    ]
+  }
+}
