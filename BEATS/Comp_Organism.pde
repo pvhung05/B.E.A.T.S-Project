@@ -7,9 +7,9 @@ abstract class Organism extends BaseEntity {
   float optimalDepthMin, optimalDepthMax;
   float hitboxW, hitboxH;
 
-  Organism(float x, float y, float energyLevel, float maxEnergy, float metabolismRate, float reproductionEnergyThreshold, float optimalDepthMin, float optimalDepthMax, float width, float height)
+  Organism(EntityType type, float x, float y, float energyLevel, float maxEnergy, float metabolismRate, float reproductionEnergyThreshold, float optimalDepthMin, float optimalDepthMax, float width, float height)
   {
-    super(x,y);
+    super(type, x, y);
     this.energyLevel = energyLevel;
     this.maxEnergy = maxEnergy;
     this.metabolismRate = metabolismRate;

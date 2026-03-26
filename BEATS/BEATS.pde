@@ -1,16 +1,21 @@
 EventBus systemBus;
-EntityManager world;
 Camera camera;
+
+EntityManager world;
 EntityFactory entityFactory;
+EntityRenderer entityRenderer;
+
 Controller uiController;
 Manager uiManager;
+
 FX_Manager fxManager;
 AudioManager audioManager;
+
 boolean isPaused = false;
 
 void setup() {
   surface.setTitle("Biological Equilibrium & Trophic Simulator");
-  size(1280, 720);
+  size(1280, 720, P3D);
   
   UIState.initColors(this);
   Assets.load(this);
@@ -36,6 +41,7 @@ void setup() {
   camera = new Camera(UIState.WORLD_WIDTH/2, UIState.WORLD_HEIGHT/2, width, height);
   
   // 5. Initialize Managers
+  entityRenderer = new EntityRenderer();
   entityFactory = new EntityFactory();
   world = new EntityManager();
   uiController = new Controller();
@@ -44,7 +50,7 @@ void setup() {
   audioManager = new AudioManager();
   
   // 6. Load Initial Scenario (Triggers Spawns via systemBus)
-  loadScenario("data/init/scenarios/scenario_mvp.json");
+  loadScenario("data/init/scenarios/scenario_01.json");
 
   // App orchestration subscriptions
   systemBus.subscribe(EventType.EVENT_APP_PAUSE, new IEventListener() {
@@ -108,10 +114,10 @@ void draw() {
   pushMatrix();
   
   // Apply the refactored camera matrix
-  camera.apply(g);
+  camera.apply();
   
   drawWorldMarkers();
-  world.render(); 
+  entityRenderer.render(world.entities, camera); 
   fxManager.render();
   
   popMatrix();
@@ -123,6 +129,7 @@ void draw() {
 
 void drawWorldMarkers() {
   pushStyle();
+  rectMode(CORNER);
   stroke(200);
   strokeWeight(5);
   noFill();

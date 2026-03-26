@@ -1,22 +1,28 @@
 // Module_ConcreteObject.pde
 // Where all the final classes are defined
-// Constructor values are loaded from data/organisms/<name>.json via cfgFloat().
-
-
 
 final class Crab extends Decomposer {
+    final float MAX_ENERGY = cfgFloat("crab", "energy", "maxEnergy");
+    final float METABOLISM_RATE = cfgFloat("crab", "energy", "metabolismRate");
+    final float REPRO_THRESHOLD = cfgFloat("crab", "reproduction", "energyThreshold");
+    final float MIN_DEPTH = cfgFloat("crab", "ecology", "minDepth");
+    final float MAX_DEPTH = cfgFloat("crab", "ecology", "maxDepth");
+    final float SPEED = cfgFloat("crab", "movement", "speed");
+    final float TURN_RATE = cfgFloat("crab", "movement", "turnRate");
+    final float VISION_RADIUS = cfgFloat("crab", "feeding", "visionRadius");
+    final float CONSUME_RADIUS = cfgFloat("crab", "feeding", "consumeRadius");
+    final float ENERGY_GAIN = cfgFloat("crab", "energy", "energyGain");
 
     Organism currentCorpse;
 
-    // JSON: data/organisms/crab.json
     Crab(float x, float y, float energyLevel) {
-        super(x, y, energyLevel,
+        super(EntityType.CRAB, x, y, energyLevel,
             cfgFloat("crab", "energy", "maxEnergy"),
             cfgFloat("crab", "energy", "metabolismRate"),
             cfgFloat("crab", "reproduction", "energyThreshold"),
             cfgFloat("crab", "ecology", "minDepth"),
             cfgFloat("crab", "ecology", "maxDepth"),
-            20.0f, 20.0f, // trong json chưa có nên tôi đang set cứng hitboxW, hitboxH
+            20.0f, 20.0f,
             cfgFloat("crab", "movement", "speed"),
             cfgFloat("crab", "movement", "turnRate"),
             cfgFloat("crab", "feeding", "visionRadius"),
@@ -33,26 +39,10 @@ final class Crab extends Decomposer {
         searchCorpse();
         if (currentCorpse != null) {
             float d = dist(x, y, currentCorpse.x, currentCorpse.y);
-            if (d <= attackRadius) {
+            if (d <= CONSUME_RADIUS) {
                 consumeCorpse(currentCorpse);
-            } else {
-                // Steer toward corpse
-                // TODO: implement steering using speed/turnRate
             }
         }
-    }
-
-    @Override
-    void render() {
-        if (isDead()) return;
-        pushStyle();
-        fill(180, 80, 50);
-        stroke(100, 40, 20);
-        rectMode(CENTER);
-        rect(x, y, 25, 15, 4);
-        line(x-12, y-7, x-18, y-12);
-        line(x+12, y-7, x+18, y-12);
-        popStyle();
     }
 
     @Override
@@ -67,30 +57,35 @@ final class Crab extends Decomposer {
 
     @Override
     void consumeCorpse(Organism target) {
-        // Drain corpse energy; gain up to energyGain, capped at maxEnergy
-        float gained = min(energyGain, target.energyLevel);
-        energyLevel = min(maxEnergy, energyLevel + gained);
+        float gained = min(ENERGY_GAIN, target.energyLevel);
+        energyLevel = min(MAX_ENERGY, energyLevel + gained);
         target.energyLevel -= gained;
         if (target.energyLevel <= 0) currentCorpse = null;
     }
 
     @Override
     void searchCorpse() {
-        // TODO: search world.corpses
+        // TODO: search
     }
 }
 
 
 final class Algae extends Producer {
+    final float MAX_ENERGY = cfgFloat("algae", "energy", "maxEnergy");
+    final float METABOLISM_RATE = cfgFloat("algae", "energy", "metabolismRate");
+    final float REPRO_THRESHOLD = cfgFloat("algae", "reproduction", "energyThreshold");
+    final float MIN_DEPTH = cfgFloat("algae", "ecology", "minDepth");
+    final float MAX_DEPTH = cfgFloat("algae", "ecology", "maxDepth");
+    final float PHOTO_RATE = cfgFloat("algae", "energy", "photosynthesisRate");
 
     Algae(float x, float y, float energyLevel) {
-        super(x, y, energyLevel,
+        super(EntityType.ALGAE, x, y, energyLevel,
             cfgFloat("algae", "energy", "maxEnergy"),
             cfgFloat("algae", "energy", "metabolismRate"),
             cfgFloat("algae", "reproduction", "energyThreshold"),
             cfgFloat("algae", "ecology", "minDepth"),
             cfgFloat("algae", "ecology", "maxDepth"),
-            10.0f,10.0f, // trong json chưa có nên tôi đang set cứng hitboxW, hitboxH
+            10.0f, 10.0f,
             cfgFloat("algae", "energy", "photosynthesisRate")
         );
     }
@@ -105,19 +100,6 @@ final class Algae extends Producer {
         updateBiologicalState();
         if (isDead()) return;
         photosynthesis();
-        // TODO: checkReproduction() — spawn new Algae when energyLevel >= reproductionEnergyThreshold
-    }
-
-    @Override
-    void render() {
-        if (isDead()) return;
-        pushStyle();
-        noStroke();
-        fill(60, 180, 80, 200);
-        ellipse(x, y, 12, 12);
-        fill(40, 140, 60, 150);
-        ellipse(x, y-5, 8, 12);
-        popStyle();
     }
 
     @Override
@@ -133,21 +115,32 @@ final class Algae extends Producer {
     @Override
     void photosynthesis() {
         float lightFactor = 1.0f - (y / UIState.WORLD_HEIGHT);
-        energyLevel = min(maxEnergy, energyLevel + photosynthesisRate * lightFactor);
+        energyLevel = min(MAX_ENERGY, energyLevel + PHOTO_RATE * lightFactor);
     }
 }
 
 
 final class Shark extends Consumer {
+    final float MAX_ENERGY = cfgFloat("shark", "energy", "maxEnergy");
+    final float METABOLISM_RATE = cfgFloat("shark", "energy", "metabolismRate");
+    final float REPRO_THRESHOLD = cfgFloat("shark", "reproduction", "energyThreshold");
+    final float MIN_DEPTH = cfgFloat("shark", "ecology", "minDepth");
+    final float MAX_DEPTH = cfgFloat("shark", "ecology", "maxDepth");
+    final float HUNGER_THRESHOLD = cfgFloat("shark", "energy", "hungerThreshold");
+    final float ENERGY_GAIN = cfgFloat("shark", "energy", "energyGain");
+    final float SPEED = cfgFloat("shark", "movement", "speed");
+    final float TURN_RATE = cfgFloat("shark", "movement", "turnRate");
+    final float VISION_RADIUS = cfgFloat("shark", "feeding", "visionRadius");
+    final float ATTACK_RADIUS = cfgFloat("shark", "feeding", "attackRadius");
 
     Shark(float x, float y, float energyLevel) {
-        super(x, y, energyLevel,
+        super(EntityType.SHARK, x, y, energyLevel,
             cfgFloat("shark", "energy", "maxEnergy"),
             cfgFloat("shark", "energy", "metabolismRate"),
             cfgFloat("shark", "reproduction", "energyThreshold"),
             cfgFloat("shark", "ecology", "minDepth"),
             cfgFloat("shark", "ecology", "maxDepth"),
-            40.0f,20.0f,
+            40.0f, 20.0f,
             cfgFloat("shark", "energy", "hungerThreshold"),
             cfgFloat("shark", "energy", "energyGain"),
             cfgFloat("shark", "movement", "speed"),
@@ -163,17 +156,11 @@ final class Shark extends Consumer {
     }
 
     @Override
-    public void render() {
-        if (isDead()) return;
-        // TODO: implement rendering logic
-    }
-
-    @Override
     public void update() {
         if (isDead()) return;
         updateBiologicalState();
         
-        state = (energyLevel < hungerThreshold) ? State.HUNT : State.CRUISE;
+        state = (energyLevel < HUNGER_THRESHOLD) ? State.HUNT : State.CRUISE;
         if (state == State.HUNT) hunt();
         else cruise();
 
@@ -182,37 +169,47 @@ final class Shark extends Consumer {
 
     @Override
     void cruise() {
-        // TODO: implement patrol/wandering behaviour using speed and turnRate
+        // TODO: patrol
     }
 
     @Override
     void hunt() {
-        // TODO: build Organism list from world.getEntitiesInRange(x, y, visionRadius),
-        //       call searchFood(), steer toward target, consume when within attackRadius
+        // TODO: search and steer
     }
 }
 
 final class Sardine extends Consumer {
+    final float MAX_ENERGY = cfgFloat("sardine", "energy", "maxEnergy");
+    final float METABOLISM_RATE = cfgFloat("sardine", "energy", "metabolismRate");
+    final float REPRO_THRESHOLD = cfgFloat("sardine", "reproduction", "energyThreshold");
+    final float MIN_DEPTH = cfgFloat("sardine", "ecology", "minDepth");
+    final float MAX_DEPTH = cfgFloat("sardine", "ecology", "maxDepth");
+    final float HUNGER_THRESHOLD = cfgFloat("sardine", "energy", "hungerThreshold");
+    final float ENERGY_GAIN = cfgFloat("sardine", "energy", "energyGain");
+    final float SPEED = cfgFloat("sardine", "movement", "speed");
+    final float TURN_RATE = cfgFloat("sardine", "movement", "turnRate");
+    final float VISION_RADIUS = cfgFloat("sardine", "feeding", "visionRadius");
+    final float ATTACK_RADIUS = cfgFloatOr("sardine", "feeding", "attackRadius", 8.0f);
 
-    static final float SCHOOL_RADIUS     = 60.0f;
-    static final float ALIGN_WEIGHT      = 1.0f;
-    static final float COHESION_WEIGHT   = 0.8f;
-    static final float SEPARATION_WEIGHT = 1.2f;
+    final float SCHOOL_RADIUS     = 60.0f;
+    final float ALIGN_WEIGHT      = 1.0f;
+    final float COHESION_WEIGHT   = 0.8f;
+    final float SEPARATION_WEIGHT = 1.2f;
 
     Sardine(float x, float y, float energyLevel) {
-        super(x, y, energyLevel,
-            cfgFloat("sardine", "energy",       "maxEnergy"),
-            cfgFloat("sardine", "energy",       "metabolismRate"),
+        super(EntityType.SARDINE, x, y, energyLevel,
+            cfgFloat("sardine", "energy", "maxEnergy"),
+            cfgFloat("sardine", "energy", "metabolismRate"),
             cfgFloat("sardine", "reproduction", "energyThreshold"),
-            cfgFloat("sardine", "ecology",      "minDepth"),
-            cfgFloat("sardine", "ecology",      "maxDepth"),
-            15.0f,10.0f,
-            cfgFloat("sardine", "energy",       "hungerThreshold"),
-            cfgFloat("sardine", "energy",       "energyGain"),
-            cfgFloat("sardine", "movement",     "speed"),
-            cfgFloat("sardine", "movement",     "turnRate"),
-            cfgFloat("sardine", "feeding",      "visionRadius"),
-            cfgFloatOr("sardine", "feeding",    "attackRadius", 8.0f)
+            cfgFloat("sardine", "ecology", "minDepth"),
+            cfgFloat("sardine", "ecology", "maxDepth"),
+            15.0f, 10.0f,
+            cfgFloat("sardine", "energy", "hungerThreshold"),
+            cfgFloat("sardine", "energy", "energyGain"),
+            cfgFloat("sardine", "movement", "speed"),
+            cfgFloat("sardine", "movement", "turnRate"),
+            cfgFloat("sardine", "feeding", "visionRadius"),
+            cfgFloatOr("sardine", "feeding", "attackRadius", 8.0f)
         );
     }
 
@@ -226,7 +223,7 @@ final class Sardine extends Consumer {
         if (isDead()) return;
         updateBiologicalState();
         
-        state = (energyLevel < hungerThreshold) ? State.HUNT : State.CRUISE;
+        state = (energyLevel < HUNGER_THRESHOLD) ? State.HUNT : State.CRUISE;
         if (state == State.HUNT) hunt();
         else cruise();
 
@@ -234,20 +231,12 @@ final class Sardine extends Consumer {
     }
 
     @Override
-    public void render() {
-        if (isDead()) return;
-        // TODO: implement rendering logic
-    }
-
-    @Override
     void cruise() {
-        // TODO: implement boid schooling using SCHOOL_RADIUS,
-        //       ALIGN_WEIGHT, COHESION_WEIGHT, SEPARATION_WEIGHT
+        // TODO: schooling
     }
 
     @Override
     void hunt() {
-        // TODO: build Organism list from world.getEntitiesInRange(x, y, visionRadius),
-        //       call searchFood(), steer toward nearest Algae, consume when within attackRadius
+        // TODO: search and steer
     }
 }

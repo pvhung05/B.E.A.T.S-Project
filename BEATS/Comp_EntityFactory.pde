@@ -5,19 +5,25 @@
 class EntityFactory {
   
   Organism spawn(String species, float x, float y, float initialEnergyPct) {
-    species = species.toLowerCase();
+    species = species.toUpperCase();
     
-    // Get maxEnergy from ConfigLoader (PR 33 system)
-    float maxEnergy = cfgFloat(species, "energy", "maxEnergy");
+    // Determine maxEnergy to apply initialEnergyPct
+    float maxEnergy = 100.0f; // Default fallback
+    
+    if (species.equals("CRAB")) maxEnergy = cfgFloat("crab", "energy", "maxEnergy");
+    else if (species.equals("ALGAE")) maxEnergy = cfgFloat("algae", "energy", "maxEnergy");
+    else if (species.equals("SHARK")) maxEnergy = cfgFloat("shark", "energy", "maxEnergy");
+    else if (species.equals("SARDINE")) maxEnergy = cfgFloat("sardine", "energy", "maxEnergy");
+    
     float currentEnergy = initialEnergyPct >= 0 ? maxEnergy * initialEnergyPct : maxEnergy;
 
-    if (species.equals("crab")) {
+    if (species.equals("CRAB")) {
       return new Crab(x, y, currentEnergy);
-    } else if (species.equals("algae")) {
+    } else if (species.equals("ALGAE")) {
       return new Algae(x, y, currentEnergy);
-    } else if (species.equals("shark")) {
+    } else if (species.equals("SHARK")) {
       return new Shark(x, y, currentEnergy);
-    } else if (species.equals("sardine")) {
+    } else if (species.equals("SARDINE")) {
       return new Sardine(x, y, currentEnergy);
     }
     

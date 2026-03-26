@@ -68,31 +68,6 @@ class EntityManager implements IEventListener {
     }
   }
 
-  /**
-   * Decoupled Render Pass: Handles drawing and frustum culling.
-   */
-  void render() {
-    PVector camPos = camera.getPos();
-    for (IObject e : entities) {
-      // Frustum Culling - Only render if visible
-      if (isVisible(e, camPos)) {
-        e.render();
-      }
-    }
-  }
-
-  boolean isVisible(IObject e, PVector camPos) {
-    if (e instanceof BaseEntity) {
-      BaseEntity be = (BaseEntity) e;
-      float margin = 100; // Increased margin
-      return be.x > camPos.x - margin && 
-             be.x < camPos.x + camera.w + margin && 
-             be.y > camPos.y - margin && 
-             be.y < camPos.y + camera.h + margin;
-    }
-    return true;
-  }
-
   ArrayList<IObject> getEntitiesInRange(float x, float y, float radius) {
     ArrayList<IObject> results = new ArrayList<IObject>();
     if (spatialTree != null) {
