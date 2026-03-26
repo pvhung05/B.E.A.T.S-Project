@@ -14,8 +14,8 @@ abstract class Consumer extends Organism {
     State state;
     Organism currentTarget;
 
-    Consumer(EntityType type, float x, float y, float energyLevel, float maxEnergy, float metabolismRate, float reproductionEnergyThreshold, float optimalDepthMin, float optimalDepthMax, float hitboxW, float hitboxH, float hungerThreshold, float energyGain, float speed, float turnRate, float visionRadius, float attackRadius) {
-        super(type, x, y, energyLevel, maxEnergy, metabolismRate, reproductionEnergyThreshold, optimalDepthMin, optimalDepthMax, hitboxW, hitboxH);
+    Consumer(float x, float y, float energyLevel, float maxEnergy, float metabolismRate, float reproductionEnergyThreshold, float optimalDepthMin, float optimalDepthMax, float hitboxW, float hitboxH, float hungerThreshold, float energyGain, float speed, float turnRate, float visionRadius, float attackRadius) {
+        super(x, y, energyLevel, maxEnergy, metabolismRate, reproductionEnergyThreshold, optimalDepthMin, optimalDepthMax, hitboxW, hitboxH);
 
         this.hungerThreshold = hungerThreshold;
         this.energyGain = energyGain;

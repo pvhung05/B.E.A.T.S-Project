@@ -1,24 +1,27 @@
+
 abstract class BaseEntity implements IObject {
-  // PURE DATA. NO PROCESSING CORE LIBRARIES ALLOWED.
-  
-  // Tagging: Essential for the System_Renderer to identify the payload type.
-  final EntityType type; 
-  
-  // Kinematics
+  // TODO[@Comp-Eng]: Implement update() logic for internal state mutation based on environmental deltas.
+  // DO NOT declare variables outside this class. Handle generic internal state mutation.
+
   float x, y;
   float velocityX, velocityY;
-  
-  // Lifecycle state
   boolean dead = false;
 
-  BaseEntity(EntityType type, float x, float y) {
-    this.type = type;
+  BaseEntity(float x, float y) {
     this.x = x;
     this.y = y;
   }
 
-  // The strict mathematical tick. 
-  abstract void update();
+  // void update() {
+  // Localized logic: e.g., orbit rotation, state degradation, local animation
+  // }
+
+  // void render() {
+  // TODO[@Tech-Art]: Replace this solid fill() with a procedural lerpColor() driven by the component's
+  // normalized active state. Target 60 FPS.
+
+  // TODO[@Comp-Eng]: Concrete objects will process their internal state here.
+  // }
 
   boolean isDead() {
     return dead;

@@ -5,6 +5,8 @@ interface IObject {
   
   void update();
   
+  void render();
+  
   boolean isSelected(float mx, float my);
   
   boolean isDead();

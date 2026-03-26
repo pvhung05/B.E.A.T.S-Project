@@ -56,11 +56,11 @@ class Camera implements IObject {
   }
 
   /**
-   * Applies the camera's transformation matrix to the current sketch context.
+   * Applies the camera's transformation matrix to the current PApplet/PGraphics context.
    */
-  void apply() {
-    applyMatrix(matrix.m00, matrix.m01, matrix.m02, 
-                matrix.m10, matrix.m11, matrix.m12);
+  void apply(PGraphics g) {
+    g.applyMatrix(matrix.m00, matrix.m01, matrix.m02, 
+                  matrix.m10, matrix.m11, matrix.m12);
   }
 
   /**
