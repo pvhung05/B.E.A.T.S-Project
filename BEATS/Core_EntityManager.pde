@@ -84,7 +84,7 @@ class EntityManager implements IEventListener {
   boolean isVisible(IObject e, PVector camPos) {
     if (e instanceof BaseEntity) {
       BaseEntity be = (BaseEntity) e;
-      float margin = 50; 
+      float margin = 100; // Increased margin
       return be.x > camPos.x - margin && 
              be.x < camPos.x + camera.w + margin && 
              be.y > camPos.y - margin && 
