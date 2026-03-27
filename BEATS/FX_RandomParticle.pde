@@ -1,4 +1,4 @@
-final class FX_RandomParticle extends FX_Particle {
+final class FX_RandomParticle extends FX_Particle { // TODO: @[FX] I suggest moving all this FX_<ex>Particle classes to a single Module_Particles.pde file
 
     FX_RandomParticle(PVector start) {
         super(start);
