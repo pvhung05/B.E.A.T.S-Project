@@ -2,317 +2,317 @@
 // The HUD: Handles drawing of buttons, sliders, toolbars using purely mathematical primitives.
 
 interface Widget {
-  // TODO[@UI]: Instruct them to interface ONLY with EntityManager to add/remove/select objects. 
-  // The UI must remain agnostic to the entity's underlying logic.
-  
-  void render();
-  void update();
-  boolean isHovered(float mx, float my);
-  void onClick();
+    // TODO[@UI]: Instruct them to interface ONLY with EntityManager to add/remove/select objects.
+    // The UI must remain agnostic to the entity's underlying logic.
+
+    void render();
+    void update();
+    boolean isHovered(float mx, float my);
+    void onClick();
 }
 
 class Manager {
 
-  HashMap<MenuType, SubMenu> subMenus;
-  ArrayList<Widget> widgets;
+    HashMap<MenuType, SubMenu> subMenus;
+    ArrayList<Widget> widgets;
 
-  Manager(){
+    Manager() {
 
-    widgets = new ArrayList<Widget>();
-    subMenus = new HashMap<MenuType, SubMenu>();
-    float subX = UIState.sidebarX + UIState.buttonW;
+        widgets = new ArrayList<Widget>();
+        subMenus = new HashMap<MenuType, SubMenu>();
+        float subX = UIState.sidebarX + UIState.buttonW;
 
-    
 
-    widgets.add(new ToggleButton(
-      UIState.sidebarX - 40,
-      UIState.sidebarY,
-      30
-    ));
 
-    widgets.add(new Button(
-      UIState.sidebarX,
-      UIState.sidebarY,
-      UIState.buttonW,
-      UIState.buttonH,
-      "Spawn Tool",
-      () -> UIState.activeMenu = MenuType.SPAWN
-    ));
+        widgets.add(new ToggleButton(
+            UIState.sidebarX - 40,
+            UIState.sidebarY,
+            30
+            ));
 
-    widgets.add(new Button(
-      UIState.sidebarX,
-      UIState.sidebarY + UIState.buttonH + UIState.gap,
-      UIState.buttonW,
-      UIState.buttonH,
-      "Cull Tool",
-      () -> UIState.activeMenu = MenuType.CULL
-    ));
+        widgets.add(new Button(
+            UIState.sidebarX,
+            UIState.sidebarY,
+            UIState.buttonW,
+            UIState.buttonH,
+            "Spawn Tool",
+            () -> UIState.activeMenu = MenuType.SPAWN
+            ));
 
-    widgets.add(new Button(
-      UIState.sidebarX,
-      UIState.sidebarY + (UIState.buttonH + UIState.gap) * 2,
-      UIState.buttonW,
-      UIState.buttonH,
-      "Temperature",
-      () -> UIState.activeMenu = MenuType.TEMPERATURE
-    ));
+        widgets.add(new Button(
+            UIState.sidebarX,
+            UIState.sidebarY + UIState.buttonH + UIState.gap,
+            UIState.buttonW,
+            UIState.buttonH,
+            "Cull Tool",
+            () -> UIState.activeMenu = MenuType.CULL
+            ));
 
-    widgets.add(new Button(
-      UIState.sidebarX,
-      UIState.sidebarY + (UIState.buttonH + UIState.gap) * 3,
-      UIState.buttonW,
-      UIState.buttonH,
-      "Pollution",
-      () -> UIState.activeMenu = MenuType.POLLUTION
-    ));
+        widgets.add(new Button(
+            UIState.sidebarX,
+            UIState.sidebarY + (UIState.buttonH + UIState.gap) * 2,
+            UIState.buttonW,
+            UIState.buttonH,
+            "Temperature",
+            () -> UIState.activeMenu = MenuType.TEMPERATURE
+            ));
 
-    subMenus.put(
-      MenuType.SPAWN,
-      new SpawnSubMenu(
-        subX,
-        UIState.sidebarY,
-        UIState.buttonW
-      )
-    );
-    
-    subMenus.put(
-      MenuType.CULL,
-      new CullSubMenu(
-        subX,
-        UIState.sidebarY + (UIState.buttonH + UIState.gap),
-        UIState.buttonW
-      )
-    );
+        widgets.add(new Button(
+            UIState.sidebarX,
+            UIState.sidebarY + (UIState.buttonH + UIState.gap) * 3,
+            UIState.buttonW,
+            UIState.buttonH,
+            "Pollution",
+            () -> UIState.activeMenu = MenuType.POLLUTION
+            ));
 
-    subMenus.put(
-      MenuType.TEMPERATURE,
-      new TemperatureSubMenu(
-        subX,
-        UIState.sidebarY + (UIState.buttonH + UIState.gap) * 2,
-        UIState.buttonW
-      )
-    );
+        subMenus.put(
+            MenuType.SPAWN,
+            new SpawnSubMenu(
+            subX,
+            UIState.sidebarY,
+            UIState.buttonW
+            )
+            );
 
-    subMenus.put(
-      MenuType.POLLUTION,
-      new PollutionSubMenu(
-        subX,
-        UIState.sidebarY + (UIState.buttonH + UIState.gap) * 3,
-        UIState.buttonW
-      )
-    );
-  }
+        subMenus.put(
+            MenuType.CULL,
+            new CullSubMenu(
+            subX,
+            UIState.sidebarY + (UIState.buttonH + UIState.gap),
+            UIState.buttonW
+            )
+            );
 
-  void render(){
+        subMenus.put(
+            MenuType.TEMPERATURE,
+            new TemperatureSubMenu(
+            subX,
+            UIState.sidebarY + (UIState.buttonH + UIState.gap) * 2,
+            UIState.buttonW
+            )
+            );
 
-    for(Widget w:widgets){
-      if(w instanceof ToggleButton){
-        w.render();
-      }
+        subMenus.put(
+            MenuType.POLLUTION,
+            new PollutionSubMenu(
+            subX,
+            UIState.sidebarY + (UIState.buttonH + UIState.gap) * 3,
+            UIState.buttonW
+            )
+            );
     }
 
-    if(!UIState.sidebarOpen) return;
+    void render() {
 
-    fill(UIState.MENU_BG);
-    rect(UIState.sidebarX, UIState.sidebarY, UIState.buttonW, (UIState.buttonH + UIState.gap) * 4);
+        for (Widget w : widgets) {
+            if (w instanceof ToggleButton) {
+                w.render();
+            }
+        }
 
-    for(Widget w:widgets){
-      if(!(w instanceof ToggleButton)){
-        w.update();
-        w.render();
-      }
+        if (!UIState.sidebarOpen) return;
+
+        fill(UIState.MENU_BG);
+        rect(UIState.sidebarX, UIState.sidebarY, UIState.buttonW, (UIState.buttonH + UIState.gap) * 4);
+
+        for (Widget w : widgets) {
+            if (!(w instanceof ToggleButton)) {
+                w.update();
+                w.render();
+            }
+        }
+
+        SubMenu menu = subMenus.get(UIState.activeMenu);
+        if (menu != null) {
+            menu.render();
+        }
     }
 
-    SubMenu menu = subMenus.get(UIState.activeMenu);
-    if(menu != null){
-      menu.render();
-    }
-  }
+    boolean handleMouseClick(float mx, float my) {
 
-  boolean handleMouseClick(float mx, float my){
+        for (Widget w : widgets) {
+            if (w.isHovered(mx, my)) {
+                w.onClick();
+                return true;
+            }
+        }
 
-    for(Widget w : widgets){
-      if(w.isHovered(mx, my)){
-        w.onClick();
-        return true;
-      }
-    }
+        SubMenu menu = subMenus.get(UIState.activeMenu);
+        if (menu != null) {
+            return menu.handleMousePressed(mx, my);
+        }
 
-    SubMenu menu = subMenus.get(UIState.activeMenu);
-    if(menu != null){
-      return menu.handleMousePressed(mx, my);
+        return false;
     }
 
-    return false;
-  }
-
-  void handleMouseReleased(){
-    SubMenu menu = subMenus.get(UIState.activeMenu);
-    if(menu != null){
-      menu.handleMouseReleased();
+    void handleMouseReleased() {
+        SubMenu menu = subMenus.get(UIState.activeMenu);
+        if (menu != null) {
+            menu.handleMouseReleased();
+        }
     }
-  }
 
-  void handleMouseDragged(float mx, float my){
-    SubMenu menu = subMenus.get(UIState.activeMenu);
-    if(menu != null){
-      menu.handleMouseDragged(mx, my);
+    void handleMouseDragged(float mx, float my) {
+        SubMenu menu = subMenus.get(UIState.activeMenu);
+        if (menu != null) {
+            menu.handleMouseDragged(mx, my);
+        }
     }
-  }
 }
 
 //toggle button
 
 class ToggleButton implements Widget {
 
-  float x,y,size;
+    float x, y, size;
 
-  ToggleButton(float x,float y,float size){
-    this.x=x;
-    this.y=y;
-    this.size=size;
-  }
-
-  void update(){}
-
-  void render(){
-
-    fill(180);
-    stroke(0);
-    rect(x,y,size,size);
-
-    fill(0);
-
-    if(UIState.sidebarOpen){
-      triangle(x+8,y+6,x+8,y+size-6,x+size-8,y+size/2);
+    ToggleButton(float x, float y, float size) {
+        this.x=x;
+        this.y=y;
+        this.size=size;
     }
-    else{
-      triangle(x+size-8,y+6,x+size-8,y+size-6,x+8,y+size/2);
+
+    void update() {
     }
-  }
 
-  boolean isHovered(float mx,float my){
-    return mx>=x && mx<=x+size && my>=y && my<=y+size;
-  }
+    void render() {
 
-  void onClick(){
-    UIState.sidebarOpen=!UIState.sidebarOpen;
-    UIState.activeMenu=MenuType.NONE;
-  }
+        fill(180);
+        stroke(0);
+        rect(x, y, size, size);
+
+        fill(0);
+
+        if (UIState.sidebarOpen) {
+            triangle(x+8, y+6, x+8, y+size-6, x+size-8, y+size/2);
+        } else {
+            triangle(x+size-8, y+6, x+size-8, y+size-6, x+8, y+size/2);
+        }
+    }
+
+    boolean isHovered(float mx, float my) {
+        return mx>=x && mx<=x+size && my>=y && my<=y+size;
+    }
+
+    void onClick() {
+        UIState.sidebarOpen=!UIState.sidebarOpen;
+        UIState.activeMenu=MenuType.NONE;
+    }
 }
 
 //menu button
 class Button implements Widget {
 
-  float x,y,w,h;
-  String label;
-  Runnable command;
+    float x, y, w, h;
+    String label;
+    Runnable command;
 
-  Button(float x,float y,float w,float h,String label,Runnable command){
-    this.x=x;
-    this.y=y;
-    this.w=w;
-    this.h=h;
-    this.label=label;
-    this.command = command;
-  }
-
-  void update(){}
-
-  void render(){
-    if(isHovered(mouseX,mouseY)){
-      fill(UIState.MENU_HOVER);
-    } else {
-      fill(UIState.MENU_BG);
+    Button(float x, float y, float w, float h, String label, Runnable command) {
+        this.x=x;
+        this.y=y;
+        this.w=w;
+        this.h=h;
+        this.label=label;
+        this.command = command;
     }
 
-    rect(x,y,w,h);
-
-    fill(UIState.MENU_TEXT);
-    textAlign(LEFT,CENTER);
-    text(label,x+10,y+h/2);
-  }
-
-  boolean isHovered(float mx,float my){
-    return mx>=x && mx<=x+w && my>=y && my<=y+h;
-  }
-
-  void onClick(){
-    if(command != null){
-      command.run();
+    void update() {
     }
-  }
+
+    void render() {
+        if (isHovered(mouseX, mouseY)) {
+            fill(UIState.MENU_HOVER);
+        } else {
+            fill(UIState.MENU_BG);
+        }
+
+        rect(x, y, w, h);
+
+        fill(UIState.MENU_TEXT);
+        textAlign(LEFT, CENTER);
+        text(label, x+10, y+h/2);
+    }
+
+    boolean isHovered(float mx, float my) {
+        return mx>=x && mx<=x+w && my>=y && my<=y+h;
+    }
+
+    void onClick() {
+        if (command != null) {
+            command.run();
+        }
+    }
 }
 // Slider
 class Slider implements Widget {
 
-  float x,y,w,h;
+    float x, y, w, h;
 
-  float minVal,maxVal;
-  float value;
+    float minVal, maxVal;
+    float value;
 
-  String label;
+    String label;
 
-  boolean dragging=false;
+    boolean dragging=false;
 
-  Slider(float x,float y,float w,float h,
-         String label,
-         float minVal,float maxVal,float value){
+    Slider(float x, float y, float w, float h,
+        String label,
+        float minVal, float maxVal, float value) {
 
-    this.x=x;
-    this.y=y;
-    this.w=w;
-    this.h=h;
+        this.x=x;
+        this.y=y;
+        this.w=w;
+        this.h=h;
 
-    this.label=label;
+        this.label=label;
 
-    this.minVal=minVal;
-    this.maxVal=maxVal;
-    this.value=value;
-  }
+        this.minVal=minVal;
+        this.maxVal=maxVal;
+        this.value=value;
+    }
 
-  void update(){
-  }
+    void update() {
+    }
 
-  void render(){
+    void render() {
 
-    // background
-    fill(UIState.MENU_BG);
-    rect(x,y,w,h);
+        // background
+        fill(UIState.MENU_BG);
+        rect(x, y, w, h);
 
-    // label
-    fill(UIState.MENU_TEXT);
-    textAlign(LEFT,CENTER);
-    text(nf(value,1,1),x+8,y+h/3);
+        // label
+        fill(UIState.MENU_TEXT);
+        textAlign(LEFT, CENTER);
+        text(nf(value, 1, 1), x+8, y+h/3);
 
-    // slider line
-    float lineY = y + h - 10;
+        // slider line
+        float lineY = y + h - 10;
 
-    stroke(160);
-    line(x+10,lineY,x+w-10,lineY);
+        stroke(160);
+        line(x+10, lineY, x+w-10, lineY);
 
-    // knob position
-    float knobX = map(value,minVal,maxVal,x+10,x+w-10);
+        // knob position
+        float knobX = map(value, minVal, maxVal, x+10, x+w-10);
 
-    if(dragging)
-      fill(255);
-    else
-      fill(200);
+        if (dragging)
+            fill(255);
+        else
+            fill(200);
 
-    ellipse(knobX,lineY,12,12);
-  }
+        ellipse(knobX, lineY, 12, 12);
+    }
 
-  boolean isHovered(float mx,float my){
-    return mx>=x && mx<=x+w &&
-           my>=y && my<=y+h;
-  }
+    boolean isHovered(float mx, float my) {
+        return mx>=x && mx<=x+w &&
+            my>=y && my<=y+h;
+    }
 
-  void onClick(){
-    dragging=true;
-  }
+    void onClick() {
+        dragging=true;
+    }
 
-  void stopDragging(){
-    dragging=false;
-  }
-
+    void stopDragging() {
+        dragging=false;
+    }
 }
