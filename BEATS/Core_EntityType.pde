@@ -7,6 +7,6 @@ enum EntityType {
     SARDINE,
     SHARK,
     CRAB,
-    CORPSE, // TODO: @[Core] handle logic when shark die
+    CORPSE, // TODO: @[Core] handle logic when shark/sardine die, turn them into corpse entity 
     PARTICLE // TODO: unsure, but in the future might need
 }

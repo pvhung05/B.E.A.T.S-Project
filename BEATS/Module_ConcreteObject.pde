@@ -2,7 +2,7 @@
 // Where all the final classes are defined
 // Constructor values are loaded from data/organisms/<name>.json via cfgFloat().
 
-
+// TODO: @[Core] please complete all your TODO below
 
 final class Crab extends Decomposer {
     Organism currentCorpse;

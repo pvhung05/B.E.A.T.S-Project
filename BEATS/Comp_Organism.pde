@@ -6,9 +6,12 @@ abstract class Organism extends BaseEntity {
     float reproductionEnergyThreshold;
     float optimalDepthMin, optimalDepthMax;
     float hitboxW, hitboxH; 
-    // TODO: @[Core] forgot to assign lifetime, if not literally no corpse for crab to eat
+    // TODO: @[Core] forgot to assign lifetime (int type suggested, decrease each frame), if not literally no corpse for crab to eat
     // float yAngle;? 
-    // TODO: @[FX/Core] might need in MMP with 3D
+    // TODO: @[FX] @[Core] might need that yAngle in MMP with 3D model of entities (just spin when turn around)
+    /**
+    the expected behavior 
+    */
 
     Organism(EntityType type, float x, float y, float energyLevel, float maxEnergy, float metabolismRate, float reproductionEnergyThreshold, float optimalDepthMin, float optimalDepthMax, float width, float height)
     {

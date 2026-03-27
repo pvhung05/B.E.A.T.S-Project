@@ -31,6 +31,7 @@ abstract class Consumer extends Organism {
      * Returns null if no target found.
      */
     Organism searchFood(java.util.List<Organism> organisms) {
+        // FIXME: @[Core] this may create a ClassCast exception later on if you use pass entity list of world to this
         Organism closest = null;
         float closestDist = visionRadius;
         for (Organism o : organisms) {
@@ -49,3 +50,4 @@ abstract class Consumer extends Organism {
 
     abstract void cruise();
 }
+

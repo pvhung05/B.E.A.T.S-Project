@@ -9,6 +9,7 @@ enum EventType {
     EVENT_UI_TOOL_SELECTED,
     EVENT_ENV_PARAM_CHANGED,
     EVENT_UI_SLIDER_CHANGED,
+    // @[UI] define user config save event here
 
     // Entity Lifecycle (Frontend/Core Engineer)
     EVENT_ENTITY_SPAWN_REQUEST,

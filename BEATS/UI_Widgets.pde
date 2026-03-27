@@ -2,9 +2,6 @@
 // The HUD: Handles drawing of buttons, sliders, toolbars using purely mathematical primitives.
 
 interface Widget {
-    // TODO[@UI]: Instruct them to interface ONLY with EntityManager to add/remove/select objects.
-    // The UI must remain agnostic to the entity's underlying logic.
-
     void render();
     void update();
     boolean isHovered(float mx, float my);
