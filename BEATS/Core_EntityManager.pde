@@ -19,7 +19,14 @@ class EntityManager implements IEventListener {
             float y = (Float) data[2];
             float initialEnergyPct = data.length > 3 && data[3] != null ? (Float) data[3] : -1.0f;
 
-            Organism e = entityFactory.spawn(EntityType.valueOf(entityId), x, y, initialEnergyPct);
+            EntityType entityType;
+            try {
+                entityType = EntityType.valueOf(entityId);
+            } catch (IllegalArgumentException ex) {
+                System.err.println("EntityManager: Unknown entity type '" + entityId + "' — spawn ignored.");
+                return;
+            }
+            Organism e = entityFactory.spawn(entityType, x, y, initialEnergyPct);
             if (e != null) {
                 entities.add(e);
             }
@@ -63,6 +70,12 @@ class EntityManager implements IEventListener {
 
             // Remove dead entities during the update pass
             if (e.isDead()) {
+                // Directly add a Corpse for Crab to scavenge — bypass event bus
+                // to avoid violating EVENT_ENTITY_SPAWN_REQUEST payload spec ([3] must be null)
+                if (e instanceof Organism && !(e instanceof Corpse)) {
+                    Organism o = (Organism) e;
+                    entities.add(new Corpse(o.x, o.y, max(10.0f, o.energyLevel)));
+                }
                 entities.remove(i);
             }
         }

@@ -30,11 +30,12 @@ abstract class Consumer extends Organism {
      * Searches the given list for the nearest valid prey within visionRadius.
      * Returns null if no target found.
      */
-    Organism searchFood(java.util.List<Organism> organisms) {
-        // FIXME: @[Core] this may create a ClassCast exception later on if you use pass entity list of world to this
+    Organism searchFood(ArrayList<IObject> objects) {
         Organism closest = null;
         float closestDist = visionRadius;
-        for (Organism o : organisms) {
+        for (IObject obj : objects) {
+            if (!(obj instanceof Organism)) continue;
+            Organism o = (Organism) obj;
             if (o == this || o.isDead()) continue;
             if (!canConsume(o)) continue;
             float d = dist(x, y, o.x, o.y);
