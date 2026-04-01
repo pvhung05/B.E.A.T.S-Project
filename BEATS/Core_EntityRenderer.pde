@@ -26,6 +26,7 @@ class EntityRenderer {
     }
 
     private void drawEntity(BaseEntity e) {
+        pushStyle();
         pushMatrix();
         translate(e.x, e.y);
 
@@ -45,6 +46,7 @@ class EntityRenderer {
         }
         // TODO: @[FX] may need to handle corpse too
         popMatrix();
+        popStyle();
     }
 
 
@@ -56,6 +58,8 @@ class EntityRenderer {
         noStroke();
         fill(60, 180, 80, 200);
         ellipse(0, 0, 12, 12);
+        fill(40, 140, 60, 150);
+        ellipse(0, -5, 8, 12);
     }
 
     private void drawSardine(Sardine e) {
@@ -70,8 +74,11 @@ class EntityRenderer {
 
     private void drawCrab(Crab e) {
         fill(180, 80, 50);
+        stroke(100, 40, 20);
         rectMode(CENTER);
         rect(0, 0, 25, 15, 4);
+        line(-12, -7, -18, -12);
+        line(12, -7, 18, -12);
     }
 
     private boolean isVisible(BaseEntity e, PVector camPos, Camera camera) {
