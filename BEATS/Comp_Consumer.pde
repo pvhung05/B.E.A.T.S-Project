@@ -1,6 +1,7 @@
 enum State {
     CRUISE,
-        HUNT
+    HUNT,
+    FLEE
 }
 
 abstract class Consumer extends Organism {

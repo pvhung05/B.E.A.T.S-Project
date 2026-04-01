@@ -2,8 +2,6 @@
 // Where all the final classes are defined
 // Constructor values are loaded from data/organisms/<name>.json via cfgFloat().
 
-// TODO: @[Core] please complete all your TODO below
-
 final class Crab extends Decomposer {
     Organism currentCorpse;
 
@@ -28,17 +26,24 @@ final class Crab extends Decomposer {
     void update() {
         if (isDead()) return;
         updateBiologicalState();
-        applyBoundaryAI(UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
+        if (isDead()) return;
         searchCorpse();
         if (currentCorpse != null) {
             float d = dist(x, y, currentCorpse.x, currentCorpse.y);
             if (d <= attackRadius) {
                 consumeCorpse(currentCorpse);
             } else {
-                // Steer toward corpse
-                // TODO: implement steering using cfgFloat("sardine", "movement", "speed")/turnRate
+                float angle = atan2(currentCorpse.y - y, currentCorpse.x - x);
+                velocityX = cos(angle) * speed;
+                velocityY = sin(angle) * speed;
             }
         }
+        applyBoundaryAI(UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
+    }
+
+
+    void render() {
+        // Rendering handled centrally by EntityRenderer.drawCrab()
     }
 
 
@@ -48,28 +53,44 @@ final class Crab extends Decomposer {
 
 
     boolean canConsume(Organism target) {
-        return target.isDead();
+        // Crab handles corpse eating manually via searchCorpse()/consumeCorpse() in update().
+        // Returning false here prevents Module_Logic from also triggering a second consumption on the same frame.
+        return false;
     }
 
 
     void consumeCorpse(Organism target) {
-        // Drain corpse energy; gain up to energyGain, capped at maxEnergy
         float gained = min(energyGain, target.energyLevel);
         energyLevel = min(maxEnergy, energyLevel + gained);
         target.energyLevel -= gained;
-        if (target.energyLevel <= 0) currentCorpse = null;
+        if (target.energyLevel <= 0) {
+            target.dead = true;
+            currentCorpse = null;
+        }
     }
 
 
     void searchCorpse() {
-        // TODO: search world.corpses
+        // Keep tracking current corpse if it is still alive
+        if (currentCorpse != null && !currentCorpse.isDead()) return;
+        currentCorpse = null;
+        ArrayList<IObject> nearby = world.getEntitiesInRange(x, y, visionRadius);
+        float closest = visionRadius;
+        for (IObject obj : nearby) {
+            if (!(obj instanceof Corpse)) continue;
+            Corpse c = (Corpse) obj;
+            if (c.isDead()) continue;
+            float d = dist(x, y, c.x, c.y);
+            if (d < closest) {
+                closest = d;
+                currentCorpse = c;
+            }
+        }
     }
 }
 
 
 final class Algae extends Producer {
-
-
 
     Algae(float x, float y, float energyLevel) {
         super(EntityType.ALGAE, x, y, energyLevel,
@@ -88,7 +109,11 @@ final class Algae extends Producer {
         updateBiologicalState();
         if (isDead()) return;
         photosynthesis();
-        // TODO: checkReproduction() — spawn new Algae when energyLevel >= reproductionEnergyThreshold
+    }
+
+
+    void render() {
+        // Rendering handled centrally by EntityRenderer.drawAlgae()
     }
 
 
@@ -111,7 +136,7 @@ final class Algae extends Producer {
 
 final class Shark extends Consumer {
     Shark(float x, float y, float energyLevel) {
-        super(EntityType.SHARK ,x, y, energyLevel,
+        super(EntityType.SHARK, x, y, energyLevel,
             cfgFloat("shark", "energy", "maxEnergy"),
             cfgFloat("shark", "energy", "metabolismRate"),
             cfgFloat("shark", "reproduction", "energyThreshold"),
@@ -133,9 +158,16 @@ final class Shark extends Consumer {
     }
 
 
+    void render() {
+        if (isDead()) return;
+        // TODO: @[FX] implement rendering logic
+    }
+
+
     void update() {
         if (isDead()) return;
         updateBiologicalState();
+        if (isDead()) return;
 
         state = (energyLevel < hungerThreshold) ? State.HUNT : State.CRUISE;
         if (state == State.HUNT) hunt();
@@ -146,13 +178,28 @@ final class Shark extends Consumer {
 
 
     void cruise() {
-        // TODO: implement patrol/wandering behaviour using cfgFloat("sardine", "movement", "speed") and turnRate
+        if (random(1) < 0.02f) {
+            float angle = random(TWO_PI);
+            velocityX = cos(angle) * speed;
+            velocityY = sin(angle) * speed;
+        }
     }
 
 
     void hunt() {
-        // TODO: build Organism list from world.getEntitiesInRange(x, y, visionRadius),
-        //       call searchFood(), steer toward target, consume when within attackRadius
+        ArrayList<IObject> nearby = world.getEntitiesInRange(x, y, visionRadius);
+        currentTarget = searchFood(nearby);
+        if (currentTarget != null) {
+            float dx = currentTarget.x - x;
+            float dy = currentTarget.y - y;
+            float len = sqrt(dx * dx + dy * dy);
+            if (len > 0) {
+                velocityX = (dx / len) * speed;
+                velocityY = (dy / len) * speed;
+            }
+        } else {
+            cruise();
+        }
     }
 }
 
@@ -186,23 +233,165 @@ final class Sardine extends Consumer {
     void update() {
         if (isDead()) return;
         updateBiologicalState();
+        if (isDead()) return;
 
-        state = (energyLevel < hungerThreshold) ? State.HUNT : State.CRUISE;
-        if (state == State.HUNT) hunt();
-        else cruise();
+        ArrayList<IObject> nearby = world.getEntitiesInRange(x, y, visionRadius);
+
+        boolean sharkNearby = false;
+        for (IObject obj : nearby) {
+            if (obj instanceof Shark && !((Shark) obj).isDead()) {
+                sharkNearby = true;
+                break;
+            }
+        }
+
+        if (sharkNearby) {
+            state = State.FLEE;
+            flee(nearby);
+        } else if (energyLevel < hungerThreshold) {
+            state = State.HUNT;
+            hunt(nearby);
+        } else {
+            state = State.CRUISE;
+            cruise();
+        }
 
         applyBoundaryAI(UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
     }
 
 
     void cruise() {
-        // TODO: implement boid schooling using SCHOOL_RADIUS,
-        //       ALIGN_WEIGHT, COHESION_WEIGHT, SEPARATION_WEIGHT
+        ArrayList<IObject> nearby = world.getEntitiesInRange(x, y, SCHOOL_RADIUS);
+        float alignX = 0, alignY = 0;
+        float cohesionX = 0, cohesionY = 0;
+        float separationX = 0, separationY = 0;
+        int count = 0;
+
+        for (IObject obj : nearby) {
+            if (!(obj instanceof Sardine) || obj == this) continue;
+            Sardine n = (Sardine) obj;
+            float d = dist(x, y, n.x, n.y);
+            if (d == 0) continue;
+
+            alignX += n.velocityX;
+            alignY += n.velocityY;
+            cohesionX += n.x;
+            cohesionY += n.y;
+            if (d < SCHOOL_RADIUS * 0.3f) {
+                separationX += (x - n.x) / d;
+                separationY += (y - n.y) / d;
+            }
+            count++;
+        }
+
+        if (count > 0) {
+            float aLen = sqrt(alignX * alignX + alignY * alignY);
+            if (aLen > 0) { alignX /= aLen; alignY /= aLen; }
+
+            float cx = cohesionX / count - x;
+            float cy = cohesionY / count - y;
+            float cLen = sqrt(cx * cx + cy * cy);
+            if (cLen > 0) { cx /= cLen; cy /= cLen; }
+
+            float sLen = sqrt(separationX * separationX + separationY * separationY);
+            if (sLen > 0) { separationX /= sLen; separationY /= sLen; }
+
+            float newVx = alignX * ALIGN_WEIGHT + cx * COHESION_WEIGHT + separationX * SEPARATION_WEIGHT;
+            float newVy = alignY * ALIGN_WEIGHT + cy * COHESION_WEIGHT + separationY * SEPARATION_WEIGHT;
+            float vLen = sqrt(newVx * newVx + newVy * newVy);
+            if (vLen > 0) {
+                velocityX = (newVx / vLen) * speed;
+                velocityY = (newVy / vLen) * speed;
+            }
+        } else {
+            if (random(1) < 0.02f) {
+                float angle = random(TWO_PI);
+                velocityX = cos(angle) * speed;
+                velocityY = sin(angle) * speed;
+            }
+        }
+    }
+
+
+    void flee(ArrayList<IObject> nearby) {
+        float fleeX = 0, fleeY = 0;
+        int count = 0;
+        for (IObject obj : nearby) {
+            if (!(obj instanceof Shark) || ((Shark) obj).isDead()) continue;
+            Shark s = (Shark) obj;
+            float dx = x - s.x;
+            float dy = y - s.y;
+            float d = sqrt(dx * dx + dy * dy);
+            if (d > 0) {
+                fleeX += dx / d;
+                fleeY += dy / d;
+                count++;
+            }
+        }
+        if (count > 0) {
+            fleeX /= count;
+            fleeY /= count;
+            float fLen = sqrt(fleeX * fleeX + fleeY * fleeY);
+            if (fLen > 0) {
+                velocityX = (fleeX / fLen) * speed;
+                velocityY = (fleeY / fLen) * speed;
+            }
+        }
+    }
+
+
+    void hunt(ArrayList<IObject> nearby) {
+        currentTarget = searchFood(nearby);
+        if (currentTarget != null) {
+            float dx = currentTarget.x - x;
+            float dy = currentTarget.y - y;
+            float len = sqrt(dx * dx + dy * dy);
+            if (len > 0) {
+                velocityX = (dx / len) * speed;
+                velocityY = (dy / len) * speed;
+            }
+        } else {
+            cruise();
+        }
     }
 
 
     void hunt() {
-        // TODO: build Organism list from world.getEntitiesInRange(x, y, visionRadius),
-        //       call searchFood(), steer toward nearest Algae, consume when within attackRadius
+        hunt(world.getEntitiesInRange(x, y, visionRadius));
+    }
+
+
+    void render() {
+        if (isDead()) return;
+        // TODO: @[FX] implement rendering logic
+    }
+}
+
+
+final class Corpse extends Organism {
+    int corpseLifetime;
+
+    Corpse(float x, float y, float energy) {
+        super(EntityType.CORPSE, x, y, energy, energy, 0, Float.MAX_VALUE, 0, Float.MAX_VALUE, 20, 20);
+        this.corpseLifetime = 300; // ~5 seconds @ 60fps
+    }
+
+    void update() {
+        if (isDead()) return;
+        if (energyLevel <= 0 || corpseLifetime <= 0) {
+            dead = true;
+            return;
+        }
+        corpseLifetime--;
+    }
+
+    void render() {
+        // TODO: @[FX] implement corpse rendering
+    }
+
+    boolean canConsume(Organism o) { return false; }
+
+    boolean isSelected(float mx, float my) {
+        return dist(mx, my, x, y) < 15;
     }
 }
