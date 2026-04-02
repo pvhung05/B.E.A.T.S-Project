@@ -1,6 +1,6 @@
 EventBus systemBus;
 Camera camera;
-
+GameMenu gameMenu;
 EntityManager world;
 EntityFactory entityFactory;
 EntityRenderer entityRenderer;
@@ -22,7 +22,7 @@ void setup() {
     surface.setTitle("Biological Equilibrium & Trophic Simulator");
 
     UIState.initColors(this);
-    Assets.load(this);
+    ImageAssets.load(this);
 
     // 1. Initialize Global Routing Hub First
     systemBus = new EventBus();
@@ -55,6 +55,10 @@ void setup() {
 
     // 6. Load Initial Scenario (Triggers Spawns via systemBus)
     loadScenario("data/init/scenarios/scenario_01.json");
+    
+    // 7. Initialize menu when press ESC
+    gameMenu = new GameMenu();
+    gameMenu.init();
 
     // App orchestration subscriptions
     systemBus.subscribe(EventType.EVENT_APP_PAUSE, new IEventListener() {
@@ -111,29 +115,27 @@ void loadScenario(String path) {
 }
 
 void draw() {
-    if (isPaused) return; // TODO: @[UI] not necessary return, but still interactible with UI, only simulation are paused
-
     background(240);
 
     // Update camera state (clamping, matrix recalculation)
-    // ========== UPDATE LOGIC ==========
-    world.update();
-    fxManager.update();
-
-    // ========== WORLD-SPACE RENDERING ==========
+    // Update logic
+    if (!gameMenu.isVisible()) {  
+        world.update();
+        fxManager.update();
+    }
+    // World-space rendering
     pushMatrix();
-
     camera.apply(g);
     entityRenderer.render(world.entities, camera);
     // For test camera only, look like we got a race condition with global matrix stack 
     // if we try to zoom early on at the beginning
     // drawWorldMarkers(); 
     fxManager.render();
-
     popMatrix();
 
-    // ========== SCREEN-SPACE RENDERING ==========
+    // screen-space redering
     uiManager.render();
+    gameMenu.render();
     displayDebugInfo();
 }
 
@@ -169,9 +171,15 @@ void displayDebugInfo() {
 }
 
 void mousePressed() {
+    if (gameMenu.isVisible()) {
+        gameMenu.handleMousePressed();
+        return; 
+    }
+
     if (uiController != null) {
         uiController.handleMousePressed(mouseX, mouseY, mouseButton);
     }
+
     if (mouseButton == RIGHT) {
         camera.startDrag(mouseX, mouseY);
     }
@@ -184,9 +192,14 @@ void mouseReleased() {
     if (mouseButton == RIGHT) {
         camera.stopDrag();
     }
+    gameMenu.handleMouseReleased();
 }
 
 void mouseDragged() {
+    if (gameMenu.isVisible()) {
+        return; 
+    }
+
     if (camera != null && camera.isDragging) {
         camera.drag(mouseX, mouseY);
     } else if (uiController != null) {
@@ -201,7 +214,15 @@ void mouseWheel(MouseEvent event) {
 }
 
 void keyPressed() {
-    if (uiController != null) uiController.handleKeyPressed(key, keyCode);
+  if (key == ESC) {
+        key = 0; 
+        gameMenu.togglePause();
+        return;
+    }
+
+    if (uiController != null) {
+        uiController.handleKeyPressed(key, keyCode);
+    }
 }
 
 void keyReleased() {
