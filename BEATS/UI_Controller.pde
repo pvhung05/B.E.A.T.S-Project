@@ -10,6 +10,24 @@ class Controller implements IEventListener {
     void onEvent(EventType type, Object payload) {
         if (type == EventType.EVENT_UI_TOOL_SELECTED) {
             // TODO @[UI]: Update UI state machines to reflect the currently selected tool.
+            println("Selected Tool: " + payload);
+    
+            if (payload instanceof SpawnType) {
+                UIState.selectedSpawn = (SpawnType) payload;
+                UIState.cullActive = false;
+                return;
+            }
+    
+            String tool = (String) payload;
+    
+            if (tool.equals("CULL")) {
+                UIState.cullActive = true;
+                UIState.selectedSpawn = null;
+            } 
+            else if (tool.equals("NONE")) {
+                UIState.cullActive = false;
+                UIState.selectedSpawn = null;
+            }
         }
     }
 
