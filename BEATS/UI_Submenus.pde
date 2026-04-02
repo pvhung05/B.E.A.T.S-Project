@@ -140,10 +140,12 @@ class SpawnSubMenu extends SubMenu {
                 if (UIState.selectedSpawn == t) {
                     UIState.selectedSpawn = null;
                     cursor(ARROW);
+                    
+                    systemBus.publish(EventType.EVENT_UI_TOOL_SELECTED, "NONE");
                 }
                 // nếu chưa chọn hoặc đang chọn tool khác → bật
                 else {
-                    UIState.selectedSpawn = t;
+                    systemBus.publish(EventType.EVENT_UI_TOOL_SELECTED, t);
                     cursor(UIState.getSpawnCursor(t));
                 }
             }
@@ -199,11 +201,10 @@ class CullSubMenu extends SubMenu {
 
                 // toggle giống spawn
                 if (UIState.cullActive) {
-                    UIState.cullActive = false;
+                    systemBus.publish(EventType.EVENT_UI_TOOL_SELECTED, "NONE");
                     cursor(ARROW);
                 } else {
-                    UIState.cullActive = true;
-                    UIState.selectedSpawn = null;
+                     systemBus.publish(EventType.EVENT_UI_TOOL_SELECTED, "CULL");
                     cursor(UIState.getCullCursor(t));
                 }
             }
