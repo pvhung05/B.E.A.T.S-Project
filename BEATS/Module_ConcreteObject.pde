@@ -270,6 +270,7 @@ final class Sardine extends Consumer {
         for (IObject obj : nearby) {
             if (!(obj instanceof Sardine) || obj == this) continue;
             Sardine n = (Sardine) obj;
+            if (n.isDead()) continue;
             float d = dist(x, y, n.x, n.y);
             if (d == 0) continue;
 
