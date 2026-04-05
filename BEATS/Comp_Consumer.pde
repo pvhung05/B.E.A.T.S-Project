@@ -48,8 +48,5 @@ abstract class Consumer extends Organism {
         return closest;
     }
 
-    abstract void hunt();
-
-    abstract void cruise();
 }
 

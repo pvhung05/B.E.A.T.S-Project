@@ -70,11 +70,12 @@ class EntityManager implements IEventListener {
 
             // Remove dead entities during the update pass
             if (e.isDead()) {
-                // Directly add a Corpse for Crab to scavenge — bypass event bus
-                // to avoid violating EVENT_ENTITY_SPAWN_REQUEST payload spec ([3] must be null)
                 if (e instanceof Organism && !(e instanceof Corpse)) {
                     Organism o = (Organism) e;
-                    entities.add(new Corpse(o.x, o.y, max(10.0f, o.energyLevel)));
+                    // Spawn Corpse via event bus so all lifecycles go through the EventBus
+                    systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{
+                        "CORPSE", o.x, o.y, max(10.0f, o.energyLevel)
+                    });
                 }
                 entities.remove(i);
             }
