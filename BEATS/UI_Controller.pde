@@ -8,28 +8,39 @@ class Controller implements IEventListener {
     }
 
     void onEvent(EventType type, Object payload) {
-        if (type == EventType.EVENT_UI_TOOL_SELECTED) {
-            // TODO @[UI]: Update UI state machines to reflect the currently selected tool.
-            println("Selected Tool: " + payload);
+      // TODO @[UI]: Update UI state machines to reflect the currently selected tool.
+     if (type != EventType.EVENT_UI_TOOL_SELECTED) return;
     
-            if (payload instanceof SpawnType) {
-                UIState.selectedSpawn = (SpawnType) payload;
-                UIState.cullActive = false;
-                return;
-            }
+        Object[] data = (Object[]) payload;
     
-            String tool = (String) payload;
+        String toolId = (String) data[0];
     
-            if (tool.equals("CULL")) {
-                UIState.cullActive = true;
-                UIState.selectedSpawn = null;
-            } 
-            else if (tool.equals("NONE")) {
-                UIState.cullActive = false;
-                UIState.selectedSpawn = null;
-            }
+        println("Selected Tool: " + toolId);
+    
+        // reset
+        UIState.selectedSpawn = null;
+        UIState.cullActive = false;
+    
+        if ("NONE".equals(toolId)) {
+            cursor(ARROW);
+            return;
         }
-    }
+    
+        if ("CULL".equals(toolId)) {
+            UIState.cullActive = true;
+            cursor((ImageAssets.FISHING)); // hoặc type mặc định
+            return;
+        }
+    
+        // SPAWN_xxx
+        if (toolId.startsWith("SPAWN_")) {
+            String typeName = toolId.replace("SPAWN_", "");
+            SpawnType spawnType = SpawnType.valueOf(typeName);
+    
+            UIState.selectedSpawn = spawnType;
+            cursor(UIState.getSpawnCursor(spawnType));
+        }
+  }
 
     void handleMousePressed(float mx, float my, int mButton) {
         if (mButton != LEFT) return;
