@@ -5,18 +5,23 @@ class GameMenu {
     boolean visible = false;
     ArrayList<Button> buttons = new ArrayList<Button>();
 
-    GameMenu() {
+    GameMenu() {}
+
+    void openMenu() {
+        visible = true;
+        systemBus.publish(EventType.EVENT_APP_PAUSE, new Object[]{null, null, null, null});
+    }
+
+    void closeMenu() {
+        visible = false;
+        systemBus.publish(EventType.EVENT_APP_RESUME, new Object[]{null, null, null, null});
     }
 
     void togglePause() {
-        visible = !visible;
-
-        if (visible) {
-            systemBus.publish(EventType.EVENT_APP_PAUSE, null);
-        } else {
-            systemBus.publish(EventType.EVENT_APP_RESUME, null);
-        }
+        if (visible) closeMenu();
+        else openMenu();
     }
+
 
     void init() {
         buttons.clear();
@@ -32,10 +37,7 @@ class GameMenu {
             centerX - btnW / 2, startY,
             btnW, btnH,
             "Resume",
-            () -> {
-                visible = false;
-                systemBus.publish(EventType.EVENT_APP_RESUME, null);
-            }
+            () -> closeMenu()
         ));
 
         // SFX slider

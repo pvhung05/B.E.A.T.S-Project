@@ -119,7 +119,7 @@ void draw() {
 
     // Update camera state (clamping, matrix recalculation)
     // Update logic
-    if (!gameMenu.isVisible()) {  
+    if (!isPaused) {  
         world.update();
         fxManager.update();
     }
