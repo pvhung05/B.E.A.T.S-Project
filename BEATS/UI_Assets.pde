@@ -1,4 +1,4 @@
-static class Assets {
+static class ImageAssets {
     static PImage ALGAE;
     static PImage CRAB;
     static PImage SARDINE;
