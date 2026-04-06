@@ -14,16 +14,4 @@ abstract class Decomposer extends Organism {
         this.energyGain = energyGain;
     }
 
-    /**
-     * Searches for a corpse to consume within visionRadius.
-     */
-    abstract void searchCorpse();
-
-    /**
-     * Performs the scavenger action on the specified target organism.
-     * Should increase energyLevel by energyGain and drain the corpse.
-     *
-     * @param target The dead organism to be consumed.
-     */
-    abstract void consumeCorpse(Organism target);
 }

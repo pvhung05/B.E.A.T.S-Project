@@ -5,13 +5,8 @@ abstract class Organism extends BaseEntity {
     float metabolismRate;
     float reproductionEnergyThreshold;
     float optimalDepthMin, optimalDepthMax;
-    float hitboxW, hitboxH; 
-    // TODO: @[Core] forgot to assign lifetime (int type suggested, decrease each frame), if not literally no corpse for crab to eat
-    // float yAngle;? 
-    // TODO: @[FX] @[Core] might need that yAngle in MMP with 3D model of entities (just spin when turn around)
-    /**
-    the expected behavior 
-    */
+    float hitboxW, hitboxH;
+    float yAngle = 0; // facing angle in radians, updated each frame by applyBoundaryAI
 
     Organism(EntityType type, float x, float y, float energyLevel, float maxEnergy, float metabolismRate, float reproductionEnergyThreshold, float optimalDepthMin, float optimalDepthMax, float width, float height)
     {
@@ -84,6 +79,10 @@ abstract class Organism extends BaseEntity {
         } else if (y > worldHeight) {
             y = worldHeight;
             velocityY *= -1;
+        }
+
+        if (velocityX != 0 || velocityY != 0) {
+            yAngle = atan2(velocityY, velocityX);
         }
     }
 }

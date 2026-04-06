@@ -2,10 +2,7 @@
 // Where all the final classes are defined
 // Constructor values are loaded from data/organisms/<name>.json via cfgFloat().
 
-// TODO: @[Core] please complete all your TODO below
-
 final class Crab extends Decomposer {
-    Organism currentCorpse;
 
     // JSON: data/organisms/crab.json
     Crab(float x, float y, float energyLevel) {
@@ -15,7 +12,7 @@ final class Crab extends Decomposer {
             cfgFloat("crab", "reproduction", "energyThreshold"),
             cfgFloat("crab", "ecology", "minDepth"),
             cfgFloat("crab", "ecology", "maxDepth"),
-            20.0f, 20.0f, // trong json chưa có nên tôi đang set cứng hitboxW, hitboxH
+            20.0f, 20.0f,
             cfgFloat("crab", "movement", "speed"),
             cfgFloat("crab", "movement", "turnRate"),
             cfgFloat("crab", "feeding", "visionRadius"),
@@ -28,17 +25,8 @@ final class Crab extends Decomposer {
     void update() {
         if (isDead()) return;
         updateBiologicalState();
+        if (isDead()) return;
         applyBoundaryAI(UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
-        searchCorpse();
-        if (currentCorpse != null) {
-            float d = dist(x, y, currentCorpse.x, currentCorpse.y);
-            if (d <= attackRadius) {
-                consumeCorpse(currentCorpse);
-            } else {
-                // Steer toward corpse
-                // TODO: implement steering using cfgFloat("sardine", "movement", "speed")/turnRate
-            }
-        }
     }
 
 
@@ -48,28 +36,12 @@ final class Crab extends Decomposer {
 
 
     boolean canConsume(Organism target) {
-        return target.isDead();
-    }
-
-
-    void consumeCorpse(Organism target) {
-        // Drain corpse energy; gain up to energyGain, capped at maxEnergy
-        float gained = min(energyGain, target.energyLevel);
-        energyLevel = min(maxEnergy, energyLevel + gained);
-        target.energyLevel -= gained;
-        if (target.energyLevel <= 0) currentCorpse = null;
-    }
-
-
-    void searchCorpse() {
-        // TODO: search world.corpses
+        return target instanceof Corpse && !target.isDead();
     }
 }
 
 
 final class Algae extends Producer {
-
-
 
     Algae(float x, float y, float energyLevel) {
         super(EntityType.ALGAE, x, y, energyLevel,
@@ -78,17 +50,17 @@ final class Algae extends Producer {
             cfgFloat("algae", "reproduction", "energyThreshold"),
             cfgFloat("algae", "ecology", "minDepth"),
             cfgFloat("algae", "ecology", "maxDepth"),
-            10.0f, 10.0f, // trong json chưa có nên tôi đang set cứng hitboxW, hitboxH
+            10.0f, 10.0f,
             cfgFloat("algae", "energy", "photosynthesisRate")
             );
     }
+
 
     void update() {
         if (isDead()) return;
         updateBiologicalState();
         if (isDead()) return;
         photosynthesis();
-        // TODO: checkReproduction() — spawn new Algae when energyLevel >= reproductionEnergyThreshold
     }
 
 
@@ -110,8 +82,9 @@ final class Algae extends Producer {
 
 
 final class Shark extends Consumer {
+
     Shark(float x, float y, float energyLevel) {
-        super(EntityType.SHARK ,x, y, energyLevel,
+        super(EntityType.SHARK, x, y, energyLevel,
             cfgFloat("shark", "energy", "maxEnergy"),
             cfgFloat("shark", "energy", "metabolismRate"),
             cfgFloat("shark", "reproduction", "energyThreshold"),
@@ -136,25 +109,11 @@ final class Shark extends Consumer {
     void update() {
         if (isDead()) return;
         updateBiologicalState();
-
-        state = (energyLevel < hungerThreshold) ? State.HUNT : State.CRUISE;
-        if (state == State.HUNT) hunt();
-        else cruise();
-
+        if (isDead()) return;
         applyBoundaryAI(UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
     }
-
-
-    void cruise() {
-        // TODO: implement patrol/wandering behaviour using cfgFloat("sardine", "movement", "speed") and turnRate
-    }
-
-
-    void hunt() {
-        // TODO: build Organism list from world.getEntitiesInRange(x, y, visionRadius),
-        //       call searchFood(), steer toward target, consume when within attackRadius
-    }
 }
+
 
 final class Sardine extends Consumer {
     static final float SCHOOL_RADIUS     = 60.0f;
@@ -179,30 +138,44 @@ final class Sardine extends Consumer {
             );
     }
 
+
     boolean canConsume(Organism other) {
         return other instanceof Producer && !other.isDead();
     }
 
+
     void update() {
         if (isDead()) return;
         updateBiologicalState();
-
-        state = (energyLevel < hungerThreshold) ? State.HUNT : State.CRUISE;
-        if (state == State.HUNT) hunt();
-        else cruise();
-
+        if (isDead()) return;
         applyBoundaryAI(UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
     }
+}
 
 
-    void cruise() {
-        // TODO: implement boid schooling using SCHOOL_RADIUS,
-        //       ALIGN_WEIGHT, COHESION_WEIGHT, SEPARATION_WEIGHT
+final class Corpse extends Organism {
+    int corpseLifetime;
+
+    Corpse(float x, float y, float energy) {
+        super(EntityType.CORPSE, x, y, energy, energy, 0, Float.MAX_VALUE, 0, Float.MAX_VALUE, 20, 20);
+        this.corpseLifetime = 300; // ~5 seconds @ 60fps
     }
 
 
-    void hunt() {
-        // TODO: build Organism list from world.getEntitiesInRange(x, y, visionRadius),
-        //       call searchFood(), steer toward nearest Algae, consume when within attackRadius
+    void update() {
+        if (isDead()) return;
+        if (energyLevel <= 0 || corpseLifetime <= 0) {
+            dead = true;
+            return;
+        }
+        corpseLifetime--;
+    }
+
+
+    boolean canConsume(Organism o) { return false; }
+
+
+    boolean isSelected(float mx, float my) {
+        return dist(mx, my, x, y) < 15;
     }
 }
