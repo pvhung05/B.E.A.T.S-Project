@@ -88,20 +88,20 @@ static class UIState {
     static PImage getSpawnCursor(SpawnType type) {
         switch(type) {
         case ALGAE:
-            return Assets.ALGAE;
+            return ImageAssets.ALGAE;
         case CRAB:
-            return Assets.CRAB;
+            return ImageAssets.CRAB;
         case SARDINE:
-            return Assets.SARDINE;
+            return ImageAssets.SARDINE;
         case SHARK:
-            return Assets.SHARK;
+            return ImageAssets.SHARK;
         }
         return null;
     }
     static PImage getCullCursor(CullType type) {
         switch(type) {
         case FISHING:
-            return Assets.FISHING;
+            return ImageAssets.FISHING;
         }
         return null;
     }

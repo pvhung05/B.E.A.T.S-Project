@@ -251,25 +251,29 @@ class Slider implements Widget {
 
     String label;
 
-    boolean dragging=false;
+    boolean dragging = false;
 
     Slider(float x, float y, float w, float h,
-        String label,
-        float minVal, float maxVal, float value) {
+           String label,
+           float minVal, float maxVal, float value) {
 
-        this.x=x;
-        this.y=y;
-        this.w=w;
-        this.h=h;
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
 
-        this.label=label;
+        this.label = label;
 
-        this.minVal=minVal;
-        this.maxVal=maxVal;
-        this.value=value;
+        this.minVal = minVal;
+        this.maxVal = maxVal;
+        this.value = value;
     }
 
     void update() {
+        if (dragging) {
+            float newX = constrain(mouseX, x + 10, x + w - 10);
+            value = map(newX, x + 10, x + w - 10, minVal, maxVal);
+        }
     }
 
     void render() {
@@ -278,19 +282,23 @@ class Slider implements Widget {
         fill(UIState.MENU_BG);
         rect(x, y, w, h);
 
-        // label
+        // label (bên trái)
         fill(UIState.MENU_TEXT);
+        textAlign(RIGHT, CENTER);
+        text(label, x - 10, y + h / 2);
+
+        // value (bên phải)
         textAlign(LEFT, CENTER);
-        text(nf(value, 1, 1), x+8, y+h/3);
+        text(nf(value, 1, 1), x + w + 10, y + h / 2);
 
         // slider line
         float lineY = y + h - 10;
 
         stroke(160);
-        line(x+10, lineY, x+w-10, lineY);
+        line(x + 10, lineY, x + w - 10, lineY);
 
         // knob position
-        float knobX = map(value, minVal, maxVal, x+10, x+w-10);
+        float knobX = map(value, minVal, maxVal, x + 10, x + w - 10);
 
         if (dragging)
             fill(255);
@@ -301,15 +309,19 @@ class Slider implements Widget {
     }
 
     boolean isHovered(float mx, float my) {
-        return mx>=x && mx<=x+w &&
-            my>=y && my<=y+h;
+        return mx >= x && mx <= x + w &&
+               my >= y && my <= y + h;
     }
 
     void onClick() {
-        dragging=true;
+        float knobX = map(value, minVal, maxVal, x + 10, x + w - 10);
+
+        if (dist(mouseX, mouseY, knobX, y + h - 10) < 10) {
+            dragging = true;
+        }
     }
 
     void stopDragging() {
-        dragging=false;
+        dragging = false;
     }
 }

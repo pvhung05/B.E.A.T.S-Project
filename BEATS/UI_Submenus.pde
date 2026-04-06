@@ -129,25 +129,26 @@ class SpawnSubMenu extends SubMenu {
 
             spawnButtons.add(
                 new Button(
-                x,
-                by,
-                w,
-                UIState.buttonH,
-                t.name(),
-                () -> {
+                    x, by, w, UIState.buttonH,
+                    t.name(),
+                    () -> {
 
-                // nếu đang chọn chính tool này → tắt
-                if (UIState.selectedSpawn == t) {
-                    UIState.selectedSpawn = null;
-                    cursor(ARROW);
-                }
-                // nếu chưa chọn hoặc đang chọn tool khác → bật
-                else {
-                    UIState.selectedSpawn = t;
-                    cursor(UIState.getSpawnCursor(t));
-                }
-            }
-            )
+                        String toolName = t.name();
+
+                        // toggle
+                        if (UIState.selectedSpawn == t) {
+                            toolName = "NONE";
+                        }
+
+                        systemBus.publish(
+                          EventType.EVENT_UI_TOOL_SELECTED,
+                          new Object[]{
+                              (UIState.selectedSpawn == t) ? "NONE" : "SPAWN_" + t.name(),
+                              null, null, null
+                          }
+                      );
+                    }
+                )
             );
 
             by += UIState.buttonH + UIState.gap;
@@ -171,10 +172,8 @@ class SpawnSubMenu extends SubMenu {
         return false;
     }
 
-    void handleMouseReleased() {
-    }
-    void handleMouseDragged(float mx, float my) {
-    }
+    void handleMouseReleased() {}
+    void handleMouseDragged(float mx, float my) {}
 }
 
 class CullSubMenu extends SubMenu {
@@ -190,24 +189,21 @@ class CullSubMenu extends SubMenu {
 
             cullButtons.add(
                 new Button(
-                x,
-                by,
-                w,
-                UIState.buttonH,
-                t.name(),
-                () -> {
+                    x, by, w, UIState.buttonH,
+                    t.name(),
+                    () -> {
 
-                // toggle giống spawn
-                if (UIState.cullActive) {
-                    UIState.cullActive = false;
-                    cursor(ARROW);
-                } else {
-                    UIState.cullActive = true;
-                    UIState.selectedSpawn = null;
-                    cursor(UIState.getCullCursor(t));
-                }
-            }
-            )
+                        String tool = UIState.cullActive ? "NONE" : "CULL";
+
+                        systemBus.publish(
+                          EventType.EVENT_UI_TOOL_SELECTED,
+                          new Object[]{
+                              UIState.cullActive ? "NONE" : "CULL",
+                              null, null, null
+                          }
+                      );
+                    }
+                )
             );
 
             by += UIState.buttonH + UIState.gap;
@@ -231,8 +227,6 @@ class CullSubMenu extends SubMenu {
         return false;
     }
 
-    void handleMouseReleased() {
-    }
-    void handleMouseDragged(float mx, float my) {
-    }
+    void handleMouseReleased() {}
+    void handleMouseDragged(float mx, float my) {}
 }
