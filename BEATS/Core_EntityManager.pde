@@ -1,11 +1,19 @@
 class EntityManager implements IEventListener {
-    ArrayList<IObject> entities;
+    ArrayList<Entity> entities;
+    ArrayList<System> systems;
     QuadTree spatialTree;
-    Logic simulationLogic;
 
     EntityManager() {
-        entities = new ArrayList<IObject>();
-        simulationLogic = new Logic();
+        entities = new ArrayList<Entity>();
+        systems = new ArrayList<System>();
+        
+        // Initialize ECS Systems
+        systems.add(new SysEnvironment());
+        systems.add(new SysSteering());
+        systems.add(new SysPredation());
+        systems.add(new SysMovement());
+        systems.add(new SysMetabolism());
+
         // Mandatory Subscriptions
         systemBus.subscribe(EventType.EVENT_ENTITY_SPAWN_REQUEST, this);
         systemBus.subscribe(EventType.EVENT_ENTITY_DESTROYED, this);
@@ -23,10 +31,10 @@ class EntityManager implements IEventListener {
             try {
                 entityType = EntityType.valueOf(entityId);
             } catch (IllegalArgumentException ex) {
-                System.err.println("EntityManager: Unknown entity type '" + entityId + "' — spawn ignored.");
+                java.lang.System.err.println("EntityManager: Unknown entity type '" + entityId + "' — spawn ignored.");
                 return;
             }
-            Organism e = entityFactory.spawn(entityType, x, y, initialEnergyPct);
+            Entity e = entityFactory.spawn(entityType, x, y, initialEnergyPct);
             if (e != null) {
                 entities.add(e);
             }
@@ -36,47 +44,37 @@ class EntityManager implements IEventListener {
             float y = (Float) data[2];
 
             // Mark entity at this location as dead if it's there
-            for (IObject e : entities) {
+            for (Entity e : entities) {
                 if (e.isSelected(x, y)) {
-                    if (e instanceof BaseEntity) {
-                        ((BaseEntity)e).dead = true;
-                    }
+                    e.dead = true;
                 }
             }
         }
     }
 
-    void addEntity(IObject e) {
+    void addEntity(Entity e) {
         entities.add(e);
     }
 
     /**
-     * Decoupled Update Pass: Handles physics, logic, and lifecycle.
+     * ECS Update Pass: Rebuilds QuadTree and runs all systems.
      */
     void update() {
         // 1. Rebuild spatial partitioning
         spatialTree = new QuadTree(0, 0, UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
-        for (IObject e : entities) {
+        for (Entity e : entities) {
             spatialTree.insert(e);
         }
 
-        // 2. Global Logic Pass (Tier 2 & 3)
-        simulationLogic.processRules(entities, spatialTree);
+        // 2. Run all ECS Systems
+        for (System s : systems) {
+            s.update(entities, spatialTree);
+        }
 
-        // 3. Local Entity Updates & Lifecycle
+        // 3. Lifecycle Cleanup
         for (int i = entities.size() - 1; i >= 0; i--) {
-            IObject e = entities.get(i);
-            e.update();
-
-            // Remove dead entities during the update pass
+            Entity e = entities.get(i);
             if (e.isDead()) {
-                if (e instanceof Organism && !(e instanceof Corpse)) {
-                    Organism o = (Organism) e;
-                    // Spawn Corpse via event bus so all lifecycles go through the EventBus
-                    systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{
-                        "CORPSE", o.x, o.y, max(10.0f, o.energyLevel)
-                    });
-                }
                 entities.remove(i);
             }
         }
@@ -92,8 +90,8 @@ class EntityManager implements IEventListener {
 
     IObject getObjectAt(float mx, float my) {
         ArrayList<IObject> potential = getEntitiesInRange(mx, my, 5.0f);
-        for (IObject e : potential) {
-            if (e.isSelected(mx, my)) return e;
+        for (IObject obj : potential) {
+            if (obj.isSelected(mx, my)) return obj;
         }
         return null;
     }

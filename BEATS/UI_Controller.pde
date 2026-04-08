@@ -56,10 +56,14 @@ class Controller implements IEventListener {
         IObject clickedObj = world.getObjectAt(worldPos.x, worldPos.y);
 
         if (UIState.cullActive) {
-            if (clickedObj != null && clickedObj instanceof BaseEntity) {
-                BaseEntity be = (BaseEntity) clickedObj;
-                String id = be.getClass().getSimpleName().toUpperCase();
-                systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, new Object[]{id, be.x, be.y, "CULL"});
+            if (clickedObj != null && clickedObj instanceof Entity) {
+                Entity ent = (Entity) clickedObj;
+                CSpecies s = ent.getComponent(CSpecies.class);
+                CTransform t = ent.getComponent(CTransform.class);
+                if (s != null && t != null) {
+                    String id = s.type.name();
+                    systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, new Object[]{id, t.x, t.y, "CULL"});
+                }
             }
         } else if (clickedObj == null && UIState.selectedSpawn != null) {
             println("Simulation Command: Spawned " + UIState.selectedSpawn + " at " + worldPos);
