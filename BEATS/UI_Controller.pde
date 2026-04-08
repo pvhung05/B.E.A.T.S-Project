@@ -8,7 +8,6 @@ class Controller implements IEventListener {
     }
 
     void onEvent(EventType type, Object payload) {
-      // TODO @[UI]: Update UI state machines to reflect the currently selected tool.
      if (type != EventType.EVENT_UI_TOOL_SELECTED) return;
     
         Object[] data = (Object[]) payload;
@@ -83,11 +82,6 @@ class Controller implements IEventListener {
             println("Simulation Command: Clear World");
             world.entities.clear();
         }
-
-        // TODO: @[UI] ESC to pause? a 50% opac black overlay with simple button to go back or do something else
-        // that something else very well might be SFX volume, Music volume even
-        // => Ask @[SysDes] to write code to save user's configs as @[UI] described, do not wait for each other but
-        // @[UI] only publish an event with playloads, @[SysDes] subcribe them in a new .pde file for this task 
     } 
 
     void handleKeyReleased(int k, int kCode) {
