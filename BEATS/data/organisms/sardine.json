@@ -3,7 +3,7 @@
     "type": "consumer",
     "energy": {
         "maxEnergy": 60,
-        "metabolismRate": 0.15,
+        "metabolismRate": 0.01,
         "hungerThreshold": 30,
         "energyGain": 10
     },
@@ -18,8 +18,8 @@
         "separationWeight": 1.2
     },
     "ecology": {
-        "minDepth": 0.1,
-        "maxDepth": 0.6,
+        "minDepth": 0.05,
+        "maxDepth": 0.5,
         "minWidth": 0.2,
         "maxWidth": 0.9,
         "minTemperature": 8,
