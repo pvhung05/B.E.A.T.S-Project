@@ -1,6 +1,6 @@
 {
   "app": {
-    "frameRate": 60,
+    "frameRate": 300,
     "windowSize": {
       "width": 1280,
       "height": 720

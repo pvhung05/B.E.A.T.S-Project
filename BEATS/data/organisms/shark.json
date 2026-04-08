@@ -2,13 +2,13 @@
     "name": "shark",
     "type": "consumer",
     "energy": {
-        "maxEnergy": 500,
-        "metabolismRate": 0.01,
-        "hungerThreshold": 300,
+        "maxEnergy": 150,
+        "metabolismRate": 0.03,
+        "hungerThreshold": 70,
         "energyGain": 35
     },
     "movement": {
-        "speed": 3,
+        "speed": 4,
         "turnRate": 0.1
     },
     "ecology": {
@@ -28,6 +28,6 @@
         "attackRadius": 12
     },
     "reproduction": {
-        "energyThreshold": 450
+        "energyThreshold": 130
     }
 }
