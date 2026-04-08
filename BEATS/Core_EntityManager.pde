@@ -63,18 +63,9 @@ class EntityManager implements IEventListener {
                 entities.add(e);
             }
         } else if (type == EventType.EVENT_ENTITY_DESTROYED) {
-            Object[] data = (Object[]) payload;
-            float x = (Float) data[1];
-            float y = (Float) data[2];
-
-            // Mark entity at this location as dead if it's there
-            for (IObject e : entities) {
-                if (e.isSelected(x, y)) {
-                    if (e instanceof BaseEntity) {
-                        ((BaseEntity)e).dead = true;
-                    }
-                }
-            }
+            // EVENT_ENTITY_DESTROYED is now a pure notification for FX/Audio.
+            // Authority for marking 'dead = true' is now at the source (Logic or Controller).
+            // This prevents accidental collateral damage to nearby entities (like Predators).
         }
     }
 

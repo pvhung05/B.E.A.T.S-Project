@@ -58,6 +58,7 @@ class Controller implements IEventListener {
         if (UIState.cullActive) {
             if (clickedObj != null && clickedObj instanceof BaseEntity) {
                 BaseEntity be = (BaseEntity) clickedObj;
+                be.dead = true; // Authority: mark the specific instance as dead
                 String id = be.getClass().getSimpleName().toUpperCase();
                 systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, new Object[]{id, be.x, be.y, "CULL"});
             }
