@@ -162,6 +162,13 @@ final class Corpse extends Organism {
     }
 
 
+    @Override
+    void reinit(float x, float y, float energy) {
+        super.reinit(x, y, energy);
+        this.corpseLifetime = 300;
+    }
+
+
     void update() {
         if (isDead()) return;
         if (energyLevel <= 0 || corpseLifetime <= 0) {

@@ -1,14 +1,46 @@
+import java.util.Map;
+import java.util.HashMap;
+
 class EntityManager implements IEventListener {
     ArrayList<IObject> entities;
     QuadTree spatialTree;
     Logic simulationLogic;
+    
+    // Object Pooling: Storage for inactive entities by type
+    Map<EntityType, ArrayList<BaseEntity>> pool;
 
     EntityManager() {
         entities = new ArrayList<IObject>();
+        pool = new HashMap<EntityType, ArrayList<BaseEntity>>();
         simulationLogic = new Logic();
         // Mandatory Subscriptions
         systemBus.subscribe(EventType.EVENT_ENTITY_SPAWN_REQUEST, this);
         systemBus.subscribe(EventType.EVENT_ENTITY_DESTROYED, this);
+    }
+
+    /**
+     * Retrieves an inactive entity from the pool if available.
+     */
+    BaseEntity getFromPool(EntityType type) {
+        if (pool.containsKey(type)) {
+            ArrayList<BaseEntity> typePool = pool.get(type);
+            if (!typePool.isEmpty()) {
+                BaseEntity e = typePool.remove(typePool.size() - 1);
+                return e;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns a dead entity to the pool for later reuse.
+     */
+    void returnToPool(BaseEntity e) {
+        e.active = false;
+        if (!pool.containsKey(e.type)) {
+            pool.put(e.type, new ArrayList<BaseEntity>());
+        }
+        pool.get(e.type).add(e);
     }
 
     void onEvent(EventType type, Object payload) {
@@ -54,10 +86,12 @@ class EntityManager implements IEventListener {
      * Decoupled Update Pass: Handles physics, logic, and lifecycle.
      */
     void update() {
-        // 1. Rebuild spatial partitioning
+        // 1. Rebuild spatial partitioning - only for active entities
         spatialTree = new QuadTree(0, 0, UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
         for (IObject e : entities) {
-            spatialTree.insert(e);
+            if (e.isActive()) {
+                spatialTree.insert(e);
+            }
         }
 
         // 2. Global Logic Pass (Tier 2 & 3)
@@ -66,9 +100,16 @@ class EntityManager implements IEventListener {
         // 3. Local Entity Updates & Lifecycle
         for (int i = entities.size() - 1; i >= 0; i--) {
             IObject e = entities.get(i);
+            
+            // Skip and remove if already inactive
+            if (!e.isActive()) {
+                entities.remove(i);
+                continue;
+            }
+
             e.update();
 
-            // Remove dead entities during the update pass
+            // Handle transition for dead entities
             if (e.isDead()) {
                 if (e instanceof Organism && !(e instanceof Corpse)) {
                     Organism o = (Organism) e;
@@ -76,6 +117,11 @@ class EntityManager implements IEventListener {
                     systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{
                         "CORPSE", o.x, o.y, max(10.0f, o.energyLevel)
                     });
+                }
+                
+                // Return to pool instead of just marking as inactive
+                if (e instanceof BaseEntity) {
+                    returnToPool((BaseEntity) e);
                 }
                 entities.remove(i);
             }
