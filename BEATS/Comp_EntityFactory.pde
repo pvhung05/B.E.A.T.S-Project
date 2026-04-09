@@ -5,13 +5,22 @@
 class EntityFactory {
 
     Organism spawn(EntityType species, float x, float y, float initialEnergyPct) {
+        // Try to get from pool first
+        BaseEntity pooled = world.getFromPool(species);
+        
+        float maxEnergy = species == EntityType.CORPSE ? initialEnergyPct : cfgFloat(species.name().toLowerCase(), "energy", "maxEnergy");
+        float currentEnergy = initialEnergyPct >= 0 ? (species == EntityType.CORPSE ? initialEnergyPct : maxEnergy * initialEnergyPct) : maxEnergy;
+
+        if (pooled != null && pooled instanceof Organism) {
+            Organism o = (Organism) pooled;
+            o.reinit(x, y, currentEnergy);
+            return o;
+        }
+
         // Corpse is not config-driven; energy is passed directly as absolute value
         if (species == EntityType.CORPSE) {
             return new Corpse(x, y, initialEnergyPct);
         }
-
-        float maxEnergy = cfgFloat(species.name().toLowerCase(), "energy", "maxEnergy");
-        float currentEnergy = initialEnergyPct >= 0 ? maxEnergy * initialEnergyPct : maxEnergy;
 
         switch(species) {
         case ALGAE:

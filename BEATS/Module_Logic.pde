@@ -74,7 +74,7 @@ class Logic {
         // Algae and Corpse: no locomotion
     }
 
-    private void processSharkSteering(Shark shark, QuadTree spatialTree) {
+    private void processSharkSteering(Shark shark, QuadTree spatialTree) { // TODO: @[Core] shark currently continuosly chasing sardine even when energy is not at hungry level, please fix
         ArrayList<IObject> nearby = new ArrayList<IObject>();
         spatialTree.query(shark.x, shark.y, shark.visionRadius, nearby);
 

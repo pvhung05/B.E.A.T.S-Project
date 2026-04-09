@@ -4,6 +4,7 @@ abstract class BaseEntity implements IObject {
     float x, y;
     float velocityX, velocityY;
     boolean dead = false;
+    boolean active = true;
 
 
     BaseEntity(EntityType type, float x, float y) {
@@ -16,6 +17,10 @@ abstract class BaseEntity implements IObject {
 
     boolean isDead() {
         return dead;
+    }
+
+    boolean isActive() {
+        return active;
     }
 
     void markForDeletion() {

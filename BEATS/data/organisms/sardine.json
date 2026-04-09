@@ -2,13 +2,13 @@
     "name": "sardine",
     "type": "consumer",
     "energy": {
-        "maxEnergy": 60,
-        "metabolismRate": 0.15,
-        "hungerThreshold": 30,
+        "maxEnergy": 100,
+        "metabolismRate": 0.02,
+        "hungerThreshold": 50,
         "energyGain": 10
     },
     "movement": {
-        "speed": 1.5,
+        "speed": 4,
         "turnRate": 0.15
     },
     "schooling": {
@@ -18,8 +18,8 @@
         "separationWeight": 1.2
     },
     "ecology": {
-        "minDepth": 0.1,
-        "maxDepth": 0.6,
+        "minDepth": 0.05,
+        "maxDepth": 0.5,
         "minWidth": 0.2,
         "maxWidth": 0.9,
         "minTemperature": 8,
@@ -30,9 +30,9 @@
         "food": [
             "algae"
         ],
-        "visionRadius": 80
+        "visionRadius": 150
     },
     "reproduction": {
-        "energyThreshold": 50
+        "energyThreshold": 70
     }
 }

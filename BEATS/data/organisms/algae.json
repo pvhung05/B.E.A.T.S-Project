@@ -2,8 +2,8 @@
     "name": "algae",
     "type": "producer",
     "energy": {
-        "maxEnergy": 40,
-        "metabolismRate": 0.02,
+        "maxEnergy": 100,
+        "metabolismRate": 0.05,
         "photosynthesisRate": 0.1
     },
     "movement": {
@@ -20,7 +20,7 @@
         "pollutionTolerance": 0.6
     },
     "reproduction": {
-        "energyThreshold": 30,
+        "energyThreshold": 95,
         "spawnRate": 0.05
     }
 }

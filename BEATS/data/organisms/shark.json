@@ -2,17 +2,17 @@
     "name": "shark",
     "type": "consumer",
     "energy": {
-        "maxEnergy": 100,
-        "metabolismRate": 0.3,
-        "hungerThreshold": 40,
+        "maxEnergy": 150,
+        "metabolismRate": 0.03,
+        "hungerThreshold": 70,
         "energyGain": 35
     },
     "movement": {
-        "speed": 1.2,
+        "speed": 4,
         "turnRate": 0.1
     },
     "ecology": {
-        "minDepth": 0.4,
+        "minDepth": 0.2,
         "maxDepth": 0.9,
         "minWidth": 0.4,
         "maxWidth": 1.0,
@@ -24,10 +24,10 @@
         "food": [
             "sardine"
         ],
-        "visionRadius": 150,
+        "visionRadius": 300,
         "attackRadius": 12
     },
     "reproduction": {
-        "energyThreshold": 90
+        "energyThreshold": 130
     }
 }

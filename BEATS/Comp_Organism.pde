@@ -27,6 +27,19 @@ abstract class Organism extends BaseEntity {
         checkReproduction();
     }
 
+    /**
+     * Re-initializes the organism for reuse from an object pool.
+     */
+    void reinit(float x, float y, float energy) {
+        this.x = x;
+        this.y = y;
+        this.energyLevel = energy;
+        this.dead = false;
+        this.active = true;
+        this.velocityX = 0;
+        this.velocityY = 0;
+    }
+
     boolean isOutOfBound()
     {
         return y < this.optimalDepthMin || y > this.optimalDepthMax;

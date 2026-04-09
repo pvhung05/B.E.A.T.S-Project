@@ -128,4 +128,7 @@ class Camera implements IObject {
     boolean isDead() {
         return false;
     }
+    boolean isActive() {
+        return true;
+    }
 }
