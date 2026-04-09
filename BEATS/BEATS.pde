@@ -10,6 +10,7 @@ Manager uiManager;
 
 FX_Manager fxManager;
 AudioManager audioManager;
+PopulationGraphs popGraphs;
 
 boolean isPaused = false;
 
@@ -52,6 +53,7 @@ void setup() {
     uiManager = new Manager();
     fxManager = new FX_Manager();
     audioManager = new AudioManager();
+    popGraphs = new PopulationGraphs();
 
     // 6. Load Initial Scenario (Triggers Spawns via systemBus)
     loadScenario("data/init/scenarios/scenario_01.json");
