@@ -18,12 +18,14 @@ class PopulationGraphs {
             int crabCount = 0;
             int sharkCount = 0;
             
-            for (int i = 0; i < world.entities.size(); i++) {
-                IObject e = world.entities.get(i);
-                if (e instanceof Algae) algaeCount++;
-                else if (e instanceof Sardine) sardineCount++;
-                else if (e instanceof Crab) crabCount++;
-                else if (e instanceof Shark) sharkCount++;
+            for (int e : world.activeEntities) {
+                CSpecies s = world.coordinator.getComponent(e, CSpecies.class);
+                if (s == null) continue;
+                
+                if (s.type == EntityType.ALGAE) algaeCount++;
+                else if (s.type == EntityType.SARDINE) sardineCount++;
+                else if (s.type == EntityType.CRAB) crabCount++;
+                else if (s.type == EntityType.SHARK) sharkCount++;
             }
             
             addValue(algaeHistory, algaeCount);

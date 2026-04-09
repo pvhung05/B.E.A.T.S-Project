@@ -53,19 +53,17 @@ class Controller implements IEventListener {
         PVector worldPos = camera.screenToWorld(mx, my);
 
         // 3. Process world-space interactions (Spawn/Cull)
-        IObject clickedObj = world.getObjectAt(worldPos.x, worldPos.y);
+        int clickedEntity = world.getObjectAt(worldPos.x, worldPos.y);
 
         if (UIState.cullActive) {
-            if (clickedObj != null && clickedObj instanceof Entity) {
-                Entity ent = (Entity) clickedObj;
-                CSpecies s = ent.getComponent(CSpecies.class);
-                CTransform t = ent.getComponent(CTransform.class);
+            if (clickedEntity != -1) {
+                CSpecies s = world.coordinator.getComponent(clickedEntity, CSpecies.class);
+                CTransform t = world.coordinator.getComponent(clickedEntity, CTransform.class);
                 if (s != null && t != null) {
-                    String id = s.type.name();
-                    systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, new Object[]{id, t.x, t.y, "CULL"});
+                    systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, new Object[]{s.type.name(), t.x, t.y, "CULL"});
                 }
             }
-        } else if (clickedObj == null && UIState.selectedSpawn != null) {
+        } else if (clickedEntity == -1 && UIState.selectedSpawn != null) {
             println("Simulation Command: Spawned " + UIState.selectedSpawn + " at " + worldPos);
             systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{UIState.selectedSpawn.name(), worldPos.x, worldPos.y, null}
                 );
@@ -84,7 +82,9 @@ class Controller implements IEventListener {
         // Translate raw key press into simulation commands
         if (k == 'c' || k == 'C') {
             println("Simulation Command: Clear World");
-            world.entities.clear();
+            for (int i = world.activeEntities.size() - 1; i >= 0; i--) {
+                world.destroyEntity(world.activeEntities.get(i));
+            }
         }
     } 
 

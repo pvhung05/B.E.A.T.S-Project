@@ -3,7 +3,7 @@ class QuadTree {
   
   int capacity = 4;
   
-  ArrayList<IObject> points;
+  ArrayList<Integer> points;
   
   QuadTree nw, ne, sw, se;
   boolean divided = false;
@@ -13,7 +13,7 @@ class QuadTree {
     this.y = y;
     this.w = w;
     this.h = h;
-    this.points = new ArrayList<IObject>();
+    this.points = new ArrayList<Integer>();
   }
 
   void subdivide() {
@@ -28,10 +28,8 @@ class QuadTree {
     divided = true;
   }
 
-  boolean insert(IObject obj) {
-    if (!(obj instanceof Entity)) return false;
-    Entity entity = (Entity) obj;
-    CTransform t = entity.getComponent(CTransform.class);
+  boolean insert(Coordinator coordinator, int entity) {
+    CTransform t = coordinator.getComponent(entity, CTransform.class);
     if (t == null) return false;
 
     if (!contains(t.x, t.y)) {
@@ -39,17 +37,17 @@ class QuadTree {
     }
 
     if (points.size() < capacity) {
-      points.add(obj);
+      points.add(entity);
       return true;
     } else {
       if (!divided) {
         subdivide();
       }
       
-      if (nw.insert(obj)) return true;
-      if (ne.insert(obj)) return true;
-      if (sw.insert(obj)) return true;
-      if (se.insert(obj)) return true;
+      if (nw.insert(coordinator, entity)) return true;
+      if (ne.insert(coordinator, entity)) return true;
+      if (sw.insert(coordinator, entity)) return true;
+      if (se.insert(coordinator, entity)) return true;
     }
     return false;
   }
@@ -61,27 +59,25 @@ class QuadTree {
   /**
    * Query the QuadTree for all entities within a circular range.
    */
-  void query(float cx, float cy, float cr, ArrayList<IObject> found) {
+  void query(Coordinator coordinator, float cx, float cy, float cr, ArrayList<Integer> found) {
     if (!intersectsCircle(cx, cy, cr)) {
       return;
     }
 
-    for (IObject p : points) {
-      if (!(p instanceof Entity)) continue;
-      Entity e = (Entity) p;
-      CTransform t = e.getComponent(CTransform.class);
+    for (int entity : points) {
+      CTransform t = coordinator.getComponent(entity, CTransform.class);
       if (t == null) continue;
       float dSq = (t.x - cx) * (t.x - cx) + (t.y - cy) * (t.y - cy);
       if (dSq <= cr * cr) {
-        found.add(p);
+        found.add(entity);
       }
     }
 
     if (divided) {
-      nw.query(cx, cy, cr, found);
-      ne.query(cx, cy, cr, found);
-      sw.query(cx, cy, cr, found);
-      se.query(cx, cy, cr, found);
+      nw.query(coordinator, cx, cy, cr, found);
+      ne.query(coordinator, cx, cy, cr, found);
+      sw.query(coordinator, cx, cy, cr, found);
+      se.query(coordinator, cx, cy, cr, found);
     }
   }
 

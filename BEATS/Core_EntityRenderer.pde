@@ -11,46 +11,48 @@ class EntityRenderer {
     /**
      * Main render loop for a list of entities.
      */
-    void render(ArrayList<Entity> entities, Camera camera) {
+    void render(Coordinator coordinator, ArrayList<Integer> entities, Camera camera) {
         PVector camPos = camera.getPos();
 
-        for (Entity e : entities) {
-            CTransform t = (CTransform) e.getComponent(CTransform.class);
-            CSpecies s = (CSpecies) e.getComponent(CSpecies.class);
+        for (int e : entities) {
+            CTransform t = coordinator.getComponent(e, CTransform.class);
+            CSpecies s = coordinator.getComponent(e, CSpecies.class);
             if (t == null || s == null) continue;
 
             // Frustum Culling
             if (isVisible(t, camPos, camera)) {
-                drawEntity(e, t, s);
+                drawEntity(coordinator, e, t, s);
             }
         }
     }
 
-    private void drawEntity(Entity e, CTransform t, CSpecies s) {
+    private void drawEntity(Coordinator coordinator, int e, CTransform t, CSpecies s) {
         pushStyle();
         pushMatrix();
         translate(t.x, t.y);
 
         switch(s.type) {
         case ALGAE:
-            drawAlgae(e);
+            drawAlgae();
             break;
         case SARDINE:
-            drawSardine(e);
+            drawSardine();
             break;
         case SHARK:
-            drawShark(e);
+            drawShark();
             break;
         case CRAB:
-            drawCrab(e);
+            drawCrab();
             break;        
+        case CORPSE:
+            drawCorpse();
+            break;
         }
-        // TODO: @[FX] may need to handle corpse too
         popMatrix();
         popStyle();
     }
 
-    private void drawAlgae(Entity e) {
+    private void drawAlgae() {
         noStroke();
         fill(60, 180, 80, 200);
         ellipse(0, 0, 12, 12);
@@ -58,23 +60,29 @@ class EntityRenderer {
         ellipse(0, -5, 8, 12);
     }
 
-    private void drawSardine(Entity e) {
+    private void drawSardine() {
         fill(150, 150, 200);
         ellipse(0, 0, 15, 8);
     }
 
-    private void drawShark(Entity e) {
+    private void drawShark() {
         fill(100, 100, 120);
         ellipse(0, 0, 40, 20);
     }
 
-    private void drawCrab(Entity e) {
+    private void drawCrab() {
         fill(180, 80, 50);
         stroke(100, 40, 20);
         rectMode(CENTER);
         rect(0, 0, 25, 15, 4);
         line(-12, -7, -18, -12);
         line(12, -7, 18, -12);
+    }
+    
+    private void drawCorpse() {
+        fill(120, 120, 120, 150);
+        rectMode(CENTER);
+        rect(0, 0, 18, 10, 2);
     }
 
     private boolean isVisible(CTransform t, PVector camPos, Camera camera) {

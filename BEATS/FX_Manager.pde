@@ -85,13 +85,8 @@ class FX_Manager implements IEventListener {
         PVector camPos = camera.getPos();
         float margin = 50;
 
-        for (int i = 0; i < world.entities.size(); i++) {
-            IObject o = world.entities.get(i);
-            if (!(o instanceof Entity)) continue;
-            Entity ent = (Entity)o;
-            if (ent.isDead()) continue;
-            
-            CTransform t = ent.getComponent(CTransform.class);
+        for (int e : world.activeEntities) {
+            CTransform t = world.coordinator.getComponent(e, CTransform.class);
             if (t == null) continue;
 
             // Logic Culling
@@ -102,10 +97,9 @@ class FX_Manager implements IEventListener {
 
             float stress = envVisuals.stressFactor(t.x, t.y);
             if (stress >= 0.35f) {
-                int id = java.lang.System.identityHashCode(ent);
-                Integer last = stressFxCooldown.get(id);
+                Integer last = stressFxCooldown.get(e);
                 if (last == null || frameCount - last >= 10) {
-                    stressFxCooldown.put(id, frameCount);
+                    stressFxCooldown.put(e, frameCount);
                     String mode = envVisuals.dominantMode(t.x, t.y);
                     spawnStressBurst(new PVector(t.x, t.y), stress, mode);
                 }
@@ -116,11 +110,8 @@ class FX_Manager implements IEventListener {
     void drawStressFX(PVector camPos) {
         float margin = 50;
         pushStyle();
-        for (int i = 0; i < world.entities.size(); i++) {
-            IObject o = world.entities.get(i);
-            if (!(o instanceof Entity)) continue;
-            Entity ent = (Entity)o;
-            CTransform t = ent.getComponent(CTransform.class);
+        for (int e : world.activeEntities) {
+            CTransform t = world.coordinator.getComponent(e, CTransform.class);
             if (t == null) continue;
 
             if (t.x < camPos.x - margin || t.x > camPos.x + camera.w + margin ||

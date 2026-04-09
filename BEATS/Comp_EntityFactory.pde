@@ -1,67 +1,77 @@
-// Comp_EntityFactory.pde
-// Loads JSON definitions and builds Entity objects composed of components.
+// EntityFactory.pde
+// Loads JSON definitions and assembles ECS entities with components.
 
 class EntityFactory {
 
-    Entity spawn(EntityType species, float x, float y, float initialEnergyPct) {
-        Entity e = new Entity();
-        e.addComponent(new CSpecies(species));
+    int spawn(Coordinator coordinator, EntityType species, float x, float y, float initialEnergyPct) {
+        int entity = coordinator.createEntity();
+        if (entity == -1) return -1;
+
+        // Common components
+        coordinator.addComponent(entity, new CSpecies(species));
 
         if (species == EntityType.CORPSE) {
-            e.addComponent(new CTransform(x, y, 20, 20));
-            e.addComponent(new CEnergy(initialEnergyPct, initialEnergyPct, 0, Float.MAX_VALUE));
-            e.addComponent(new CCorpse(300));
-            return e;
+            coordinator.addComponent(entity, new CTransform(x, y, 20, 20));
+            coordinator.addComponent(entity, new CCorpse(300));
+            // Energy level for decomposers to consume
+            coordinator.addComponent(entity, new CEnergy(initialEnergyPct, initialEnergyPct, 0, Float.MAX_VALUE));
+            return entity;
         }
 
-        String s = species.name().toLowerCase();
-        
-        // Transform
-        float w = 20, h = 20;
-        if (species == EntityType.SHARK) { w = 40; h = 20; }
-        else if (species == EntityType.SARDINE) { w = 15; h = 10; }
-        else if (species == EntityType.ALGAE) { w = 10; h = 10; }
-        e.addComponent(new CTransform(x, y, w, h));
-
-        // Ecology
-        e.addComponent(new CEcology(cfgFloat(s, "ecology", "minDepth"), cfgFloat(s, "ecology", "maxDepth")));
-
-        // Energy
-        float maxEnergy = cfgFloat(s, "energy", "maxEnergy");
+        float maxEnergy = cfgFloat(species.name().toLowerCase(), "energy", "maxEnergy");
+        float metabolism = cfgFloat(species.name().toLowerCase(), "energy", "metabolismRate");
+        float reproduceThreshold = cfgFloat(species.name().toLowerCase(), "reproduction", "energyThreshold");
         float currentEnergy = initialEnergyPct >= 0 ? maxEnergy * initialEnergyPct : maxEnergy;
-        e.addComponent(new CEnergy(currentEnergy, maxEnergy, cfgFloat(s, "energy", "metabolismRate"), cfgFloat(s, "reproduction", "energyThreshold")));
 
-        // Locomotion & Senses & Diet
-        if (species != EntityType.ALGAE) {
-            float speed = cfgFloat(s, "movement", "speed");
-            float turnRate = cfgFloat(s, "movement", "turnRate");
-            e.addComponent(new CVelocity(random(-speed, speed), random(-speed, speed)));
-            e.addComponent(new CSteering(speed, turnRate));
-            
-            float vision = cfgFloat(s, "feeding", "visionRadius");
-            float attack = 15;
-            if (species == EntityType.SHARK) attack = cfgFloat(s, "feeding", "attackRadius");
-            else if (species == EntityType.SARDINE) attack = cfgFloatOr(s, "feeding", "attackRadius", 8.0f);
-            else if (species == EntityType.CRAB) attack = cfgFloat(s, "feeding", "consumeRadius");
-            e.addComponent(new CSenses(vision, attack));
+        float minDepth = cfgFloat(species.name().toLowerCase(), "ecology", "minDepth");
+        float maxDepth = cfgFloat(species.name().toLowerCase(), "ecology", "maxDepth");
 
-            float hunger = cfgFloatOr(s, "energy", "hungerThreshold", 0.0f);
-            float gain = cfgFloat(s, "energy", "energyGain");
-            
-            if (species == EntityType.SHARK) {
-                e.addComponent(new CDiet(hunger, gain, EntityType.SARDINE));
-            } else if (species == EntityType.SARDINE) {
-                e.addComponent(new CDiet(hunger, gain, EntityType.ALGAE));
-            } else if (species == EntityType.CRAB) {
-                e.addComponent(new CDiet(hunger, gain, EntityType.CORPSE));
-            }
+        float speed = cfgFloatOr(species.name().toLowerCase(), "movement", "speed", 0);
+        float turnRate = cfgFloatOr(species.name().toLowerCase(), "movement", "turnRate", 0);
+
+        float vision = cfgFloatOr(species.name().toLowerCase(), "feeding", "visionRadius", 0);
+        float attack = cfgFloatOr(species.name().toLowerCase(), "feeding", "attackRadius", 15);
+        
+        float hunger = cfgFloatOr(species.name().toLowerCase(), "energy", "hungerThreshold", 0.5f);
+        float gain = cfgFloatOr(species.name().toLowerCase(), "energy", "energyGain", 10.0f);
+
+        // Species-specific setup
+        switch(species) {
+            case ALGAE:
+                coordinator.addComponent(entity, new CTransform(x, y, 10, 10));
+                coordinator.addComponent(entity, new CEnergy(currentEnergy, maxEnergy, metabolism, reproduceThreshold));
+                coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
+                coordinator.addComponent(entity, new CProducer(cfgFloat("algae", "energy", "photosynthesisRate")));
+                break;
+            case SARDINE:
+                coordinator.addComponent(entity, new CTransform(x, y, 15, 10));
+                coordinator.addComponent(entity, new CVelocity(random(-1,1), random(-1,1)));
+                coordinator.addComponent(entity, new CEnergy(currentEnergy, maxEnergy, metabolism, reproduceThreshold));
+                coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
+                coordinator.addComponent(entity, new CSteering(speed, turnRate));
+                coordinator.addComponent(entity, new CSenses(vision, attack));
+                coordinator.addComponent(entity, new CDiet(hunger * maxEnergy, gain, EntityType.ALGAE));
+                break;
+            case SHARK:
+                coordinator.addComponent(entity, new CTransform(x, y, 40, 20));
+                coordinator.addComponent(entity, new CVelocity(random(-1,1), random(-1,1)));
+                coordinator.addComponent(entity, new CEnergy(currentEnergy, maxEnergy, metabolism, reproduceThreshold));
+                coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
+                coordinator.addComponent(entity, new CSteering(speed, turnRate));
+                coordinator.addComponent(entity, new CSenses(vision, attack));
+                coordinator.addComponent(entity, new CDiet(hunger * maxEnergy, gain, EntityType.SARDINE));
+                break;
+            case CRAB:
+                coordinator.addComponent(entity, new CTransform(x, y, 20, 20));
+                coordinator.addComponent(entity, new CVelocity(random(-1,1), random(-1,1)));
+                coordinator.addComponent(entity, new CEnergy(currentEnergy, maxEnergy, metabolism, reproduceThreshold));
+                coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
+                coordinator.addComponent(entity, new CSteering(speed, turnRate));
+                coordinator.addComponent(entity, new CSenses(vision, attack));
+                coordinator.addComponent(entity, new CDiet(hunger * maxEnergy, gain, EntityType.CORPSE));
+                break;
         }
 
-        // Producer specific
-        if (species == EntityType.ALGAE) {
-            e.addComponent(new CProducer(cfgFloat(s, "energy", "photosynthesisRate")));
-        }
-
-        return e;
+        return entity;
     }
 }

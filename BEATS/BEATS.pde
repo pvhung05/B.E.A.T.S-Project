@@ -128,7 +128,7 @@ void draw() {
     // World-space rendering
     pushMatrix();
     camera.apply(g);
-    entityRenderer.render(world.entities, camera);
+    entityRenderer.render(world.coordinator, world.activeEntities, camera);
     // For test camera only, look like we got a race condition with global matrix stack 
     // if we try to zoom early on at the beginning
     // drawWorldMarkers(); 
@@ -138,6 +138,10 @@ void draw() {
     // screen-space redering
     uiManager.render();
     gameMenu.render();
+    if (!isPaused) {
+        popGraphs.update(world);
+    }
+    popGraphs.render();
     displayDebugInfo();
 }
 
@@ -167,7 +171,7 @@ void displayDebugInfo() {
     textAlign(LEFT, BOTTOM);
     textSize(14);
     text("FPS: " + int(frameRate), 20, 20);
-    text("Entities: " + world.entities.size(), 20, 40);
+    text("Entities: " + world.activeEntities.size(), 20, 40);
     text("Cam Center: " + nfc(camera.center.x, 1) + ", " + nfc(camera.center.y, 1), 20, 60);
     text("Viewport Scale: " + nfc(1.0/camera.viewportScale, 2) + "x", 20, 80);
 }

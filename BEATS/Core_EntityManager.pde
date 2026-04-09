@@ -1,18 +1,38 @@
+// Core_EntityManager.pde
+// Updated to use the optimized ECS Coordinator.
+
 class EntityManager implements IEventListener {
-    ArrayList<Entity> entities;
-    ArrayList<System> systems;
+    Coordinator coordinator;
     QuadTree spatialTree;
+    ArrayList<Integer> activeEntities;
 
     EntityManager() {
-        entities = new ArrayList<Entity>();
-        systems = new ArrayList<System>();
+        coordinator = new Coordinator();
+        activeEntities = new ArrayList<Integer>();
         
-        // Initialize ECS Systems
-        systems.add(new SysEnvironment());
-        systems.add(new SysSteering());
-        systems.add(new SysPredation());
-        systems.add(new SysMovement());
-        systems.add(new SysMetabolism());
+        // 1. Register Components
+        coordinator.registerComponent(CSpecies.class);
+        coordinator.registerComponent(CTransform.class);
+        coordinator.registerComponent(CVelocity.class);
+        coordinator.registerComponent(CEnergy.class);
+        coordinator.registerComponent(CEcology.class);
+        coordinator.registerComponent(CSteering.class);
+        coordinator.registerComponent(CSenses.class);
+        coordinator.registerComponent(CDiet.class);
+        coordinator.registerComponent(CProducer.class);
+        coordinator.registerComponent(CCorpse.class);
+
+        // 2. Register Systems
+        coordinator.registerSystem(SysEnvironment.class, new SysEnvironment(), 
+            CTransform.class, CEnergy.class, CEcology.class);
+        coordinator.registerSystem(SysSteering.class, new SysSteering(), 
+            CTransform.class, CVelocity.class, CSteering.class, CSenses.class);
+        coordinator.registerSystem(SysPredation.class, new SysPredation(), 
+            CTransform.class, CEnergy.class, CDiet.class, CSenses.class);
+        coordinator.registerSystem(SysMovement.class, new SysMovement(), 
+            CTransform.class, CVelocity.class);
+        coordinator.registerSystem(SysMetabolism.class, new SysMetabolism(), 
+            CEnergy.class);
 
         // Mandatory Subscriptions
         systemBus.subscribe(EventType.EVENT_ENTITY_SPAWN_REQUEST, this);
@@ -34,9 +54,11 @@ class EntityManager implements IEventListener {
                 java.lang.System.err.println("EntityManager: Unknown entity type '" + entityId + "' — spawn ignored.");
                 return;
             }
-            Entity e = entityFactory.spawn(entityType, x, y, initialEnergyPct);
-            if (e != null) {
-                entities.add(e);
+            
+            // Factory now returns an int ID
+            int e = entityFactory.spawn(coordinator, entityType, x, y, initialEnergyPct);
+            if (e != -1) {
+                activeEntities.add(e);
             }
         } else if (type == EventType.EVENT_ENTITY_DESTROYED) {
             Object[] data = (Object[]) payload;
@@ -44,16 +66,23 @@ class EntityManager implements IEventListener {
             float y = (Float) data[2];
 
             // Mark entity at this location as dead if it's there
-            for (Entity e : entities) {
-                if (e.isSelected(x, y)) {
-                    e.dead = true;
+            for (int i = activeEntities.size() - 1; i >= 0; i--) {
+                int e = activeEntities.get(i);
+                if (isSelected(e, x, y)) {
+                    destroyEntity(e);
                 }
             }
         }
     }
 
-    void addEntity(Entity e) {
-        entities.add(e);
+    void destroyEntity(int entity) {
+        coordinator.destroyEntity(entity);
+        for (int i = 0; i < activeEntities.size(); i++) {
+            if (activeEntities.get(i) == entity) {
+                activeEntities.remove(i);
+                break;
+            }
+        }
     }
 
     /**
@@ -62,37 +91,53 @@ class EntityManager implements IEventListener {
     void update() {
         // 1. Rebuild spatial partitioning
         spatialTree = new QuadTree(0, 0, UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
-        for (Entity e : entities) {
-            spatialTree.insert(e);
+        for (int e : activeEntities) {
+            spatialTree.insert(coordinator, e);
         }
 
         // 2. Run all ECS Systems
-        for (System s : systems) {
-            s.update(entities, spatialTree);
+        for (System s : coordinator.getSystems()) {
+            s.update(coordinator, spatialTree);
         }
 
-        // 3. Lifecycle Cleanup
-        for (int i = entities.size() - 1; i >= 0; i--) {
-            Entity e = entities.get(i);
-            if (e.isDead()) {
-                entities.remove(i);
+        // 3. Lifecycle Cleanup & Dead handling (Metabolism marks energy <= 0 as dead)
+        for (int i = activeEntities.size() - 1; i >= 0; i--) {
+            int e = activeEntities.get(i);
+            CEnergy energy = coordinator.getComponent(e, CEnergy.class);
+            CCorpse corpse = coordinator.getComponent(e, CCorpse.class);
+            
+            boolean isDead = false;
+            if (energy != null && energy.level <= 0) isDead = true;
+            if (corpse != null && corpse.lifetime <= 0) isDead = true;
+
+            if (isDead) {
+                // Spawn corpse if it was an organism (has energy and is not already a corpse)
+                if (energy != null && corpse == null) {
+                    CTransform t = coordinator.getComponent(e, CTransform.class);
+                    systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{
+                        "CORPSE", t.x, t.y, max(10.0f, energy.level)
+                    });
+                }
+                destroyEntity(e);
             }
         }
     }
 
-    ArrayList<IObject> getEntitiesInRange(float x, float y, float radius) {
-        ArrayList<IObject> results = new ArrayList<IObject>();
-        if (spatialTree != null) {
-            spatialTree.query(x, y, radius, results);
-        }
-        return results;
+    boolean isSelected(int entity, float mx, float my) {
+        CTransform t = coordinator.getComponent(entity, CTransform.class);
+        if (t == null) return false;
+        float left = t.x - t.w / 2;
+        float right = t.x + t.w / 2;
+        float bottom = t.y + t.h / 2;
+        float top = t.y - t.h / 2;
+        return (mx >= left && mx <= right && my >= top && my <= bottom);
     }
 
-    IObject getObjectAt(float mx, float my) {
-        ArrayList<IObject> potential = getEntitiesInRange(mx, my, 5.0f);
-        for (IObject obj : potential) {
-            if (obj.isSelected(mx, my)) return obj;
+    int getObjectAt(float mx, float my) {
+        // Simple search for now, could use QuadTree
+        for (int e : activeEntities) {
+            if (isSelected(e, mx, my)) return e;
         }
-        return null;
+        return -1;
     }
 }

@@ -29,7 +29,10 @@ static float cfgFloat(String species, String section, String key) {
 }
 
 static float cfgFloatOr(String species, String section, String key, float defaultVal) {
-    JSONObject obj = ConfigLoader.load(species).getJSONObject(section);
+    JSONObject speciesJson = ConfigLoader.load(species);
+    if (speciesJson == null || !speciesJson.hasKey(section)) return defaultVal;
+    JSONObject obj = speciesJson.getJSONObject(section);
+    if (obj == null) return defaultVal;
     return obj.hasKey(key) ? obj.getFloat(key) : defaultVal;
 }
 
