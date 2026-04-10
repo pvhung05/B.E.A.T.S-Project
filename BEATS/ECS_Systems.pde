@@ -183,11 +183,12 @@ class SysPredation extends System {
         ArrayList<Integer> copy = new ArrayList<Integer>(entities);
         for (int entity : copy) {
             CEnergy energy = coordinator.getComponent(entity, CEnergy.class);
-            if (energy.level > energy.max * 0.8f) continue;
-
             CTransform transform = coordinator.getComponent(entity, CTransform.class);
             CSenses senses = coordinator.getComponent(entity, CSenses.class);
             CDiet diet = coordinator.getComponent(entity, CDiet.class);
+            
+            if (energy == null || transform == null || senses == null || diet == null) continue;
+            if (energy.level > energy.max * 0.8f) continue;
 
             ArrayList<Integer> nearby = new ArrayList<Integer>();
             spatialTree.query(coordinator, transform.x, transform.y, senses.attackRadius, nearby);
