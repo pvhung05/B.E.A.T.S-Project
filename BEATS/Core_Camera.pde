@@ -35,8 +35,6 @@ class Camera implements IObject {
         w = baseW * viewportScale;
         h = baseH * viewportScale;
 
-        println("W: ", w, ", H: ", h);
-
         // Clamping: Ensure camera doesn't pan outside world boundaries
         if (w >= UIState.WORLD_WIDTH) {
             center.x = UIState.WORLD_WIDTH * 0.5f;
