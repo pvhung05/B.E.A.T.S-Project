@@ -12,6 +12,7 @@ class EntityFactory {
 
         if (species == EntityType.CORPSE) {
             coordinator.addComponent(entity, new CTransform(x, y, 20, 20));
+            // TODO: @[Core] thêm CVelocity(0, 1.5, 0) vào CORPSE để sys movement handle việc nó chìm xuống đáy cho cua ăn.
             coordinator.addComponent(entity, new CCorpse(300));
             // Energy level for decomposers to consume
             coordinator.addComponent(entity, new CEnergy(initialEnergyPct, initialEnergyPct, 0, Float.MAX_VALUE));
