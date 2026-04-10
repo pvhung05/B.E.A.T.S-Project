@@ -1,46 +1,42 @@
-import java.util.Map;
-import java.util.HashMap;
+// Core_EntityManager.pde
+// Updated to use the optimized ECS Coordinator.
 
 class EntityManager implements IEventListener {
-    ArrayList<IObject> entities;
+    Coordinator coordinator;
     QuadTree spatialTree;
-    Logic simulationLogic;
-    
-    // Object Pooling: Storage for inactive entities by type
-    Map<EntityType, ArrayList<BaseEntity>> pool;
+    ArrayList<Integer> activeEntities;
 
     EntityManager() {
-        entities = new ArrayList<IObject>();
-        pool = new HashMap<EntityType, ArrayList<BaseEntity>>();
-        simulationLogic = new Logic();
+        coordinator = new Coordinator();
+        activeEntities = new ArrayList<Integer>();
+        
+        // 1. Register Components
+        coordinator.registerComponent(CSpecies.class);
+        coordinator.registerComponent(CTransform.class);
+        coordinator.registerComponent(CVelocity.class);
+        coordinator.registerComponent(CEnergy.class);
+        coordinator.registerComponent(CEcology.class);
+        coordinator.registerComponent(CSteering.class);
+        coordinator.registerComponent(CSenses.class);
+        coordinator.registerComponent(CDiet.class);
+        coordinator.registerComponent(CProducer.class);
+        coordinator.registerComponent(CCorpse.class);
+
+        // 2. Register Systems
+        coordinator.registerSystem(SysEnvironment.class, new SysEnvironment(), 
+            CTransform.class, CEnergy.class, CEcology.class);
+        coordinator.registerSystem(SysSteering.class, new SysSteering(), 
+            CTransform.class, CVelocity.class, CSteering.class, CSenses.class);
+        coordinator.registerSystem(SysPredation.class, new SysPredation(), 
+            CTransform.class, CEnergy.class, CDiet.class, CSenses.class);
+        coordinator.registerSystem(SysMovement.class, new SysMovement(), 
+            CTransform.class, CVelocity.class);
+        coordinator.registerSystem(SysMetabolism.class, new SysMetabolism(), 
+            CEnergy.class);
+
         // Mandatory Subscriptions
         systemBus.subscribe(EventType.EVENT_ENTITY_SPAWN_REQUEST, this);
         systemBus.subscribe(EventType.EVENT_ENTITY_DESTROYED, this);
-    }
-
-    /**
-     * Retrieves an inactive entity from the pool if available.
-     */
-    BaseEntity getFromPool(EntityType type) {
-        if (pool.containsKey(type)) {
-            ArrayList<BaseEntity> typePool = pool.get(type);
-            if (!typePool.isEmpty()) {
-                BaseEntity e = typePool.remove(typePool.size() - 1);
-                return e;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns a dead entity to the pool for later reuse.
-     */
-    void returnToPool(BaseEntity e) {
-        e.active = false;
-        if (!pool.containsKey(e.type)) {
-            pool.put(e.type, new ArrayList<BaseEntity>());
-        }
-        pool.get(e.type).add(e);
     }
 
     void onEvent(EventType type, Object payload) {
@@ -55,83 +51,93 @@ class EntityManager implements IEventListener {
             try {
                 entityType = EntityType.valueOf(entityId);
             } catch (IllegalArgumentException ex) {
-                System.err.println("EntityManager: Unknown entity type '" + entityId + "' — spawn ignored.");
+                java.lang.System.err.println("EntityManager: Unknown entity type '" + entityId + "' — spawn ignored.");
                 return;
             }
-            Organism e = entityFactory.spawn(entityType, x, y, initialEnergyPct);
-            if (e != null) {
-                entities.add(e);
+            
+            // Factory now returns an int ID
+            int e = entityFactory.spawn(coordinator, entityType, x, y, initialEnergyPct);
+            if (e != -1) {
+                activeEntities.add(e);
             }
         } else if (type == EventType.EVENT_ENTITY_DESTROYED) {
-            // EVENT_ENTITY_DESTROYED is now a pure notification for FX/Audio.
-            // Authority for marking 'dead = true' is now at the source (Logic or Controller).
-            // This prevents accidental collateral damage to nearby entities (like Predators).
+            Object[] data = (Object[]) payload;
+            float x = (Float) data[1];
+            float y = (Float) data[2];
+
+            // Mark entity at this location as dead if it's there
+            for (int i = activeEntities.size() - 1; i >= 0; i--) {
+                int e = activeEntities.get(i);
+                if (isSelected(e, x, y)) {
+                    destroyEntity(e);
+                }
+            }
         }
     }
 
-    void addEntity(IObject e) {
-        entities.add(e);
+    void destroyEntity(int entity) {
+        coordinator.destroyEntity(entity);
+        for (int i = 0; i < activeEntities.size(); i++) {
+            if (activeEntities.get(i) == entity) {
+                activeEntities.remove(i);
+                break;
+            }
+        }
     }
 
     /**
-     * Decoupled Update Pass: Handles physics, logic, and lifecycle.
+     * ECS Update Pass: Rebuilds QuadTree and runs all systems.
      */
     void update() {
-        // 1. Rebuild spatial partitioning - only for active entities
+        // 1. Rebuild spatial partitioning
         spatialTree = new QuadTree(0, 0, UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
-        for (IObject e : entities) {
-            if (e.isActive()) {
-                spatialTree.insert(e);
-            }
+        for (int e : activeEntities) {
+            spatialTree.insert(coordinator, e);
         }
 
-        // 2. Global Logic Pass (Tier 2 & 3)
-        simulationLogic.processRules(entities, spatialTree);
+        // 2. Run all ECS Systems
+        for (System s : coordinator.getSystems()) {
+            s.update(coordinator, spatialTree);
+        }
 
-        // 3. Local Entity Updates & Lifecycle
-        for (int i = entities.size() - 1; i >= 0; i--) {
-            IObject e = entities.get(i);
+        // 3. Lifecycle Cleanup & Dead handling (Metabolism marks energy <= 0 as dead)
+        for (int i = activeEntities.size() - 1; i >= 0; i--) {
+            int e = activeEntities.get(i);
+            CEnergy energy = coordinator.getComponent(e, CEnergy.class);
+            CCorpse corpse = coordinator.getComponent(e, CCorpse.class);
             
-            // Skip and remove if already inactive
-            if (!e.isActive()) {
-                entities.remove(i);
-                continue;
-            }
+            boolean isDead = false;
+            if (energy != null && energy.level <= 0) isDead = true;
+            if (corpse != null && corpse.lifetime <= 0) isDead = true;
 
-            e.update();
-
-            // Handle transition for dead entities
-            if (e.isDead()) {
-                if (e instanceof Organism && !(e instanceof Corpse)) {
-                    Organism o = (Organism) e;
-                    // Spawn Corpse via event bus so all lifecycles go through the EventBus
+            if (isDead) {
+                // Spawn corpse if it was an organism (has energy and is not already a corpse)
+                if (energy != null && corpse == null) {
+                    CTransform t = coordinator.getComponent(e, CTransform.class);
                     systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{
-                        "CORPSE", o.x, o.y, max(10.0f, o.energyLevel)
+                        "CORPSE", t.x, t.y, max(10.0f, energy.level)
                     });
                 }
-                
-                // Return to pool instead of just marking as inactive
-                if (e instanceof BaseEntity) {
-                    returnToPool((BaseEntity) e);
-                }
-                entities.remove(i);
+                destroyEntity(e);
             }
         }
     }
 
-    ArrayList<IObject> getEntitiesInRange(float x, float y, float radius) {
-        ArrayList<IObject> results = new ArrayList<IObject>();
-        if (spatialTree != null) {
-            spatialTree.query(x, y, radius, results);
-        }
-        return results;
+    boolean isSelected(int entity, float mx, float my) {
+        CTransform t = coordinator.getComponent(entity, CTransform.class);
+        if (t == null) return false;
+        float left = t.x - t.w / 2;
+        float right = t.x + t.w / 2;
+        float bottom = t.y + t.h / 2;
+        float top = t.y - t.h / 2;
+        return (mx >= left && mx <= right && my >= top && my <= bottom);
     }
 
-    IObject getObjectAt(float mx, float my) {
-        ArrayList<IObject> potential = getEntitiesInRange(mx, my, 5.0f);
-        for (IObject e : potential) {
-            if (e.isSelected(mx, my)) return e;
+    int getObjectAt(float mx, float my) {
+        // Simple search for now, could use QuadTree
+        for (int e : activeEntities) {
+            if (isSelected(e, mx, my)) return e;
         }
-        return null;
+        return -1;
     }
 }

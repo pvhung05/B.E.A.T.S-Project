@@ -13,51 +13,51 @@ class EntityRenderer {
     /**
      * Main render loop for a list of entities.
      */
-    void render(ArrayList<IObject> entities, Camera camera) {
+    void render(Coordinator coordinator, ArrayList<Integer> entities, Camera camera) {
         PVector camPos = camera.getPos();
 
-        for (IObject obj : entities) {
-            if (!(obj instanceof BaseEntity)) continue;
-            BaseEntity e = (BaseEntity) obj;
+        for (int e : entities) {
+            CTransform t = coordinator.getComponent(e, CTransform.class);
+            CSpecies s = coordinator.getComponent(e, CSpecies.class);
+            if (t == null || s == null) continue;
 
             // Frustum Culling
-            if (isVisible(e, camPos, camera)) {
-                drawEntity(e);
+            if (isVisible(t, camPos, camera)) {
+                drawEntity(coordinator, e, t, s);
             }
         }
     }
 
-    private void drawEntity(BaseEntity e) {
+    private void drawEntity(Coordinator coordinator, int e, CTransform t, CSpecies s) {
         pushStyle();
         pushMatrix();
-        translate(e.x, e.y);
+        translate(t.x, t.y);
 
-        switch(e.type) {
+        switch(s.type) {
         case ALGAE:
-            drawAlgae((Algae)e);
+            drawAlgae(coordinator, e, t);
             break;
         case SARDINE:
-            drawSardine((Sardine)e);
+            drawSardine(coordinator, e, t);
             break;
         case SHARK:
-            drawShark((Shark)e);
+            drawShark(coordinator, e, t);
             break;
         case CRAB:
-            drawCrab((Crab)e);
+            drawCrab(coordinator, e, t);
             break;
         case CORPSE:
-            drawCorpse((Corpse)e);
+            drawCorpse(coordinator, e, t);
             break;
         }
         popMatrix();
         popStyle();
     }
 
-
-    private void drawAlgae(Algae e) {
-        float stress = envVisuals.stressFactor(e.x, e.y);
+    private void drawAlgae(Coordinator coordinator, int e, CTransform t) {
+        float stress = envVisuals.stressFactor(t.x, t.y);
         float alpha = 160 + (1.0f - stress) * 60.0f;
-        float sway = sin((frameCount * 0.06f) + (e.x * 0.01f)) * 2.0f;
+        float sway = sin((frameCount * 0.06f) + (t.x * 0.01f)) * 2.0f;
         noStroke();
         fill(60, 180, 80, alpha);
         ellipse(0, 0, 12, 12);
@@ -66,16 +66,18 @@ class EntityRenderer {
         drawStressOverlay(stress);
     }
 
-    private void drawSardine(Sardine e) {
-        rotate(e.yAngle);
-        float stress = envVisuals.stressFactor(e.x, e.y);
+    private void drawSardine(Coordinator coordinator, int e, CTransform t) {
+        CVelocity v = coordinator.getComponent(e, CVelocity.class);
+        CSteering st = coordinator.getComponent(e, CSteering.class);
+        if (v != null) rotate(v.yAngle);
+        float stress = envVisuals.stressFactor(t.x, t.y);
         int bodyTone = (int)max(90, 170 - stress * 65);
         noStroke();
         fill(bodyTone, bodyTone, 215, 220);
         ellipse(0, 0, 15, 8);
         triangle(-7, 0, -12, -3, -12, 3);
 
-        if (e.state == State.FLEE) {
+        if (st != null && st.state == State.FLEE) {
             stroke(255, 190, 120, 140);
             noFill();
             ellipse(0, 0, 19, 12);
@@ -83,16 +85,18 @@ class EntityRenderer {
         drawStressOverlay(stress);
     }
 
-    private void drawShark(Shark e) {
-        rotate(e.yAngle);
-        float stress = envVisuals.stressFactor(e.x, e.y);
+    private void drawShark(Coordinator coordinator, int e, CTransform t) {
+        CVelocity v = coordinator.getComponent(e, CVelocity.class);
+        CSteering st = coordinator.getComponent(e, CSteering.class);
+        if (v != null) rotate(v.yAngle);
+        float stress = envVisuals.stressFactor(t.x, t.y);
         noStroke();
         fill(100, 100, 120, 230);
         ellipse(0, 0, 40, 20);
         triangle(-18, 0, -28, -8, -28, 8);
         triangle(2, -8, -3, -17, 8, -8);
 
-        if (e.state == State.HUNT) {
+        if (st != null && st.state == State.HUNT) {
             stroke(255, 90, 70, 150);
             noFill();
             ellipse(0, 0, 46, 25);
@@ -100,9 +104,9 @@ class EntityRenderer {
         drawStressOverlay(stress);
     }
 
-    private void drawCrab(Crab e) {
-        float stress = envVisuals.stressFactor(e.x, e.y);
-        float pulse = 1.0f + sin((frameCount + e.x) * 0.12f) * 0.06f;
+    private void drawCrab(Coordinator coordinator, int e, CTransform t) {
+        float stress = envVisuals.stressFactor(t.x, t.y);
+        float pulse = 1.0f + sin((frameCount + t.x) * 0.12f) * 0.06f;
         scale(pulse);
         fill(180, 80, 50);
         stroke(100, 40, 20);
@@ -113,9 +117,10 @@ class EntityRenderer {
         drawStressOverlay(stress);
     }
 
-    private void drawCorpse(Corpse e) {
+    private void drawCorpse(Coordinator coordinator, int e, CTransform t) {
+        CCorpse c = coordinator.getComponent(e, CCorpse.class);
         noStroke();
-        float lifeRatio = constrain(e.corpseLifetime / 300.0f, 0, 1);
+        float lifeRatio = (c != null) ? constrain(c.lifetime / 300.0f, 0, 1) : 0;
         fill(105, 85, 70, 60 + lifeRatio * 80);
         ellipse(0, 0, 18, 10);
         stroke(130, 110, 90, 80);
@@ -131,11 +136,11 @@ class EntityRenderer {
         ellipse(0, 0, r, r);
     }
 
-    private boolean isVisible(BaseEntity e, PVector camPos, Camera camera) {
+    private boolean isVisible(CTransform t, PVector camPos, Camera camera) {
         final float margin = 100;
-        return e.x > camPos.x - margin &&
-            e.x < camPos.x + camera.w + margin &&
-            e.y > camPos.y - margin &&
-            e.y < camPos.y + camera.h + margin;
+        return t.x > camPos.x - margin &&
+            t.x < camPos.x + camera.w + margin &&
+            t.y > camPos.y - margin &&
+            t.y < camPos.y + camera.h + margin;
     }
 }

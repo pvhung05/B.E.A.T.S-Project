@@ -85,26 +85,23 @@ class FX_Manager implements IEventListener {
         PVector camPos = camera.getPos();
         float margin = 50;
 
-        for (int i = 0; i < world.entities.size(); i++) {
-            IObject o = world.entities.get(i);
-            if (!(o instanceof BaseEntity)) continue;
-            BaseEntity be = (BaseEntity)o;
-            if (be.isDead()) continue;
+        for (int e : world.activeEntities) {
+            CTransform t = world.coordinator.getComponent(e, CTransform.class);
+            if (t == null) continue;
 
             // Logic Culling
-            if (be.x < camPos.x - margin || be.x > camPos.x + camera.w + margin ||
-                be.y < camPos.y - margin || be.y > camPos.y + camera.h + margin) {
+            if (t.x < camPos.x - margin || t.x > camPos.x + camera.w + margin ||
+                t.y < camPos.y - margin || t.y > camPos.y + camera.h + margin) {
                 continue;
             }
 
-            float stress = envVisuals.stressFactor(be.x, be.y);
+            float stress = envVisuals.stressFactor(t.x, t.y);
             if (stress >= 0.35f) {
-                int id = System.identityHashCode(be);
-                Integer last = stressFxCooldown.get(id);
+                Integer last = stressFxCooldown.get(e);
                 if (last == null || frameCount - last >= 10) {
-                    stressFxCooldown.put(id, frameCount);
-                    String mode = envVisuals.dominantMode(be.x, be.y);
-                    spawnStressBurst(new PVector(be.x, be.y), stress, mode);
+                    stressFxCooldown.put(e, frameCount);
+                    String mode = envVisuals.dominantMode(t.x, t.y);
+                    spawnStressBurst(new PVector(t.x, t.y), stress, mode);
                 }
             }
         }
@@ -113,26 +110,25 @@ class FX_Manager implements IEventListener {
     void drawStressFX(PVector camPos) {
         float margin = 50;
         pushStyle();
-        for (int i = 0; i < world.entities.size(); i++) {
-            IObject o = world.entities.get(i);
-            if (!(o instanceof BaseEntity)) continue;
-            BaseEntity be = (BaseEntity)o;
+        for (int e : world.activeEntities) {
+            CTransform t = world.coordinator.getComponent(e, CTransform.class);
+            if (t == null) continue;
 
-            if (be.x < camPos.x - margin || be.x > camPos.x + camera.w + margin ||
-                be.y < camPos.y - margin || be.y > camPos.y + camera.h + margin) {
+            if (t.x < camPos.x - margin || t.x > camPos.x + camera.w + margin ||
+                t.y < camPos.y - margin || t.y > camPos.y + camera.h + margin) {
                 continue;
             }
 
-            float stress = envVisuals.stressFactor(be.x, be.y);
+            float stress = envVisuals.stressFactor(t.x, t.y);
             if (stress >= 0.05f) {
                 float pulse = 14 + sin(frameCount * 0.18f) * 5f + stress * 18f;
                 noFill();
                 stroke(255, 90, 50, 160 * stress);
                 strokeWeight(2);
-                ellipse(be.x, be.y, pulse, pulse);
+                ellipse(t.x, t.y, pulse, pulse);
                 if (stress > 0.45f) {
                     stroke(80, 200, 120, 130 * stress);
-                    ellipse(be.x, be.y, pulse * 0.65f, pulse * 0.65f);
+                    ellipse(t.x, t.y, pulse * 0.65f, pulse * 0.65f);
                 }
             }
         }
