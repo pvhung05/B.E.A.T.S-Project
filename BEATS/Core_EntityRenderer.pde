@@ -11,50 +11,48 @@ class EntityRenderer {
     /**
      * Main render loop for a list of entities.
      */
-    void render(ArrayList<IObject> entities, Camera camera) {
+    void render(Coordinator coordinator, ArrayList<Integer> entities, Camera camera) {
         PVector camPos = camera.getPos();
 
-        for (IObject obj : entities) {
-            if (!(obj instanceof BaseEntity)) continue;
-            BaseEntity e = (BaseEntity) obj;
+        for (int e : entities) {
+            CTransform t = coordinator.getComponent(e, CTransform.class);
+            CSpecies s = coordinator.getComponent(e, CSpecies.class);
+            if (t == null || s == null) continue;
 
             // Frustum Culling
-            if (isVisible(e, camPos, camera)) {
-                drawEntity(e);
+            if (isVisible(t, camPos, camera)) {
+                drawEntity(coordinator, e, t, s);
             }
         }
     }
 
-    private void drawEntity(BaseEntity e) {
+    private void drawEntity(Coordinator coordinator, int e, CTransform t, CSpecies s) {
         pushStyle();
         pushMatrix();
-        translate(e.x, e.y);
+        translate(t.x, t.y);
 
-        switch(e.type) {
+        switch(s.type) {
         case ALGAE:
-            drawAlgae((Algae)e);
+            drawAlgae();
             break;
         case SARDINE:
-            drawSardine((Sardine)e);
+            drawSardine();
             break;
         case SHARK:
-            drawShark((Shark)e);
+            drawShark();
             break;
         case CRAB:
-            drawCrab((Crab)e);
+            drawCrab();
             break;        
+        case CORPSE:
+            drawCorpse();
+            break;
         }
-        // TODO: @[FX] may need to handle corpse too
         popMatrix();
         popStyle();
     }
 
-
-    // TODO: @[FX] define drawing logics for each organism here, of course base on events, environment,
-    // and freely express logics of how one should be drawn, like taking damage ex
-
-    // this kind of decouple should allow FX to freely experiment with 3D rendering
-    private void drawAlgae(Algae e) {
+    private void drawAlgae() {
         noStroke();
         fill(60, 180, 80, 200);
         ellipse(0, 0, 12, 12);
@@ -62,17 +60,17 @@ class EntityRenderer {
         ellipse(0, -5, 8, 12);
     }
 
-    private void drawSardine(Sardine e) {
+    private void drawSardine() {
         fill(150, 150, 200);
         ellipse(0, 0, 15, 8);
     }
 
-    private void drawShark(Shark e) {
+    private void drawShark() {
         fill(100, 100, 120);
         ellipse(0, 0, 40, 20);
     }
 
-    private void drawCrab(Crab e) {
+    private void drawCrab() {
         fill(180, 80, 50);
         stroke(100, 40, 20);
         rectMode(CENTER);
@@ -80,12 +78,18 @@ class EntityRenderer {
         line(-12, -7, -18, -12);
         line(12, -7, 18, -12);
     }
+    
+    private void drawCorpse() {
+        fill(120, 120, 120, 150);
+        rectMode(CENTER);
+        rect(0, 0, 18, 10, 2);
+    }
 
-    private boolean isVisible(BaseEntity e, PVector camPos, Camera camera) {
+    private boolean isVisible(CTransform t, PVector camPos, Camera camera) {
         final float margin = 100;
-        return e.x > camPos.x - margin &&
-            e.x < camPos.x + camera.w + margin &&
-            e.y > camPos.y - margin &&
-            e.y < camPos.y + camera.h + margin;
+        return t.x > camPos.x - margin &&
+            t.x < camPos.x + camera.w + margin &&
+            t.y > camPos.y - margin &&
+            t.y < camPos.y + camera.h + margin;
     }
 }
