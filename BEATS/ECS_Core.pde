@@ -9,6 +9,7 @@ import java.util.Queue;
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Collection;
 
 final int MAX_ENTITIES = 10000;
@@ -156,8 +157,8 @@ abstract class System {
 }
 
 class SystemManager {
-    private Map<Class<?>, BitSet> signatures = new HashMap<Class<?>, BitSet>();
-    private Map<Class<?>, System> systems = new HashMap<Class<?>, System>();
+    private Map<Class<?>, BitSet> signatures = new LinkedHashMap<Class<?>, BitSet>();
+    private Map<Class<?>, System> systems = new LinkedHashMap<Class<?>, System>();
 
     <T extends System> void registerSystem(Class<T> type, T system) {
         systems.put(type, system);

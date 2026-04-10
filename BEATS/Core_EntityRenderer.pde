@@ -4,6 +4,7 @@
  * Decouples visual representation from simulation logic.
  */
 class EntityRenderer {
+    // TODO: @[FX] không vẽ các entity bằng hình đơn giản nữa, nhưng dùng hình ảnh trước (để test api) sau đó là tìm dần mô hình 3d nếu được
     FX_EnvironmentVisuals envVisuals;
 
     EntityRenderer() {
