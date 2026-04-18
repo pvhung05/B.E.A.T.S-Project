@@ -46,13 +46,12 @@ class SysMetabolism extends System {
 
             // Reproduction check
             if (energy.level >= energy.reproduceThreshold) {
-                // TODO: @[Core] sửa lại logic sinh đẻ, khi sinh thì bị giảm một nửa năng lượng và trao phần đó cho con của nó thông qua event EVENT_ENTITY_SPAWN_REQUEST.
                 energy.level *= 0.5f;
                 CTransform t = coordinator.getComponent(entity, CTransform.class);
                 CSpecies s = coordinator.getComponent(entity, CSpecies.class);
-
+                // Truyền đúng phần năng lượng đã tách (tính theo % của maxEnergy) cho con
                 systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{
-                    s.type.name(), t.x + random(-10, 10), t.y + random(-10, 10), 0.5f
+                    s.type.name(), t.x + random(-10, 10), t.y + random(-10, 10), energy.level / energy.max
                 });
             }
         }
@@ -60,14 +59,6 @@ class SysMetabolism extends System {
 }
 
 class SysSteering extends System {
-    // TODO: @[Core] 
-    // Logic schooling đang trực tiếp thay thế logic về tốc độ ở đây, khiến hiện tượng snapping (giật cái quay đầu) và xung đột với boundary reflection
-    // Cần phải imple theo logic F=MA theo như CSteering.turnRate 
-    // Đồng thời chuyển giúp chỗ này qua ConfigLoader.
-    static final float SARDINE_SCHOOL_RADIUS     = 60.0f;
-    static final float SARDINE_ALIGN_WEIGHT      = 1.0f;
-    static final float SARDINE_COHESION_WEIGHT   = 0.8f;
-    static final float SARDINE_SEPARATION_WEIGHT = 1.2f;
 
     @Override
     void update(Coordinator coordinator, QuadTree spatialTree) {
@@ -115,8 +106,10 @@ class SysSteering extends System {
             float dy = targetT.y - transform.y;
             float len = sqrt(dx * dx + dy * dy);
             if (len > 0) {
-                velocity.vx = (dx / len) * steering.speed;
-                velocity.vy = (dy / len) * steering.speed;
+                float targetVx = (dx / len) * steering.speed;
+                float targetVy = (dy / len) * steering.speed;
+                velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
+                velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
             }
         } else {
             steering.state = State.CRUISE;
@@ -185,8 +178,10 @@ class SysSteering extends System {
                     float dy = preyT.y - transform.y;
                     float len = sqrt(dx * dx + dy * dy);
                     if (len > 0) {
-                        velocity.vx = (dx / len) * steering.speed;
-                        velocity.vy = (dy / len) * steering.speed;
+                        float targetVx = (dx / len) * steering.speed;
+                        float targetVy = (dy / len) * steering.speed;
+                        velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
+                        velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
                         hunting = true;
                     }
                 }
@@ -199,8 +194,13 @@ class SysSteering extends System {
     }
 
     private void applySardineSchooling(int entity, Coordinator coordinator, CTransform transform, CVelocity velocity, CSteering steering, QuadTree spatialTree) {
+        float schoolRadius    = cfgFloatOr("sardine", "movement", "schoolRadius",    60.0f);
+        float alignWeight     = cfgFloatOr("sardine", "movement", "alignWeight",      1.0f);
+        float cohesionWeight  = cfgFloatOr("sardine", "movement", "cohesionWeight",   0.8f);
+        float separationWeight= cfgFloatOr("sardine", "movement", "separationWeight", 1.2f);
+
         ArrayList<Integer> school = new ArrayList<Integer>();
-        spatialTree.query(coordinator, transform.x, transform.y, SARDINE_SCHOOL_RADIUS, school);
+        spatialTree.query(coordinator, transform.x, transform.y, schoolRadius, school);
 
         float alignX = 0, alignY = 0;
         float cohesionX = 0, cohesionY = 0;
@@ -214,7 +214,7 @@ class SysSteering extends System {
 
             CTransform otherT = coordinator.getComponent(other, CTransform.class);
             CVelocity otherV = coordinator.getComponent(other, CVelocity.class);
-            
+
             float d = dist(transform.x, transform.y, otherT.x, otherT.y);
             if (d == 0) continue;
 
@@ -224,8 +224,8 @@ class SysSteering extends System {
             }
             cohesionX += otherT.x;
             cohesionY += otherT.y;
-            
-            if (d < SARDINE_SCHOOL_RADIUS * 0.3f) {
+
+            if (d < schoolRadius * 0.3f) {
                 separationX += (transform.x - otherT.x) / d;
                 separationY += (transform.y - otherT.y) / d;
             }
@@ -234,31 +234,24 @@ class SysSteering extends System {
 
         if (count > 0) {
             float aLen = sqrt(alignX * alignX + alignY * alignY);
-            if (aLen > 0) {
-                alignX /= aLen;
-                alignY /= aLen;
-            }
+            if (aLen > 0) { alignX /= aLen; alignY /= aLen; }
 
             float cx = cohesionX / count - transform.x;
             float cy = cohesionY / count - transform.y;
             float cLen = sqrt(cx * cx + cy * cy);
-            if (cLen > 0) {
-                cx /= cLen;
-                cy /= cLen;
-            }
+            if (cLen > 0) { cx /= cLen; cy /= cLen; }
 
             float sLen = sqrt(separationX * separationX + separationY * separationY);
-            if (sLen > 0) {
-                separationX /= sLen;
-                separationY /= sLen;
-            }
+            if (sLen > 0) { separationX /= sLen; separationY /= sLen; }
 
-            float newVx = alignX * SARDINE_ALIGN_WEIGHT + cx * SARDINE_COHESION_WEIGHT + separationX * SARDINE_SEPARATION_WEIGHT;
-            float newVy = alignY * SARDINE_ALIGN_WEIGHT + cy * SARDINE_COHESION_WEIGHT + separationY * SARDINE_SEPARATION_WEIGHT;
+            float newVx = alignX * alignWeight + cx * cohesionWeight + separationX * separationWeight;
+            float newVy = alignY * alignWeight + cy * cohesionWeight + separationY * separationWeight;
             float vLen = sqrt(newVx * newVx + newVy * newVy);
             if (vLen > 0) {
-                velocity.vx = (newVx / vLen) * steering.speed;
-                velocity.vy = (newVy / vLen) * steering.speed;
+                float targetVx = (newVx / vLen) * steering.speed;
+                float targetVy = (newVy / vLen) * steering.speed;
+                velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
+                velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
             }
         } else {
             if (random(1) < 0.02f) {
@@ -290,11 +283,20 @@ class SysSteering extends System {
             float dy = targetT.y - transform.y;
             float len = sqrt(dx * dx + dy * dy);
             if (len > 0) {
-                velocity.vx = (dx / len) * steering.speed;
-                velocity.vy = (dy / len) * steering.speed;
+                float targetVx = (dx / len) * steering.speed;
+                float targetVy = (dy / len) * steering.speed;
+                velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
+                velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
+            }
+        } else {
+            if (random(1) < 0.02f) {
+                float angle = random(TWO_PI);
+                velocity.vx = cos(angle) * steering.speed;
+                velocity.vy = sin(angle) * steering.speed;
             }
         }
-        // TODO: @[Core] Thêm trường hợp `else` cho target == -1 (trạng thái đi lang thang). Và clamp cả độ cao hiện tại transform.y dựa trên WORLD_HEIGHT nữa
+
+        if (transform.y > UIState.WORLD_HEIGHT) transform.y = UIState.WORLD_HEIGHT;
     }
 }
 
@@ -320,15 +322,17 @@ class SysPredation extends System {
                 if (otherSpecies == null) continue;
 
                 if (diet.prey.contains(otherSpecies.type)) {
-                    // TODO: @[Core]  Imple logic chuyển 50% năng lượng ở đây, bỏ const +10 gain với set energy = 0
-                    energy.level = min(energy.max, energy.level + diet.energyGain);
+                    CEnergy otherEnergy = coordinator.getComponent(other, CEnergy.class);
 
                     if (otherSpecies.type == EntityType.CORPSE) {
-                        CEnergy otherEnergy = coordinator.getComponent(other, CEnergy.class);
-                        if (otherEnergy != null) otherEnergy.level -= diet.energyGain;
+                        // Decomposer: drain corpse energy, gain equal amount (capped at energyGain/frame)
+                        float gained = (otherEnergy != null) ? min(diet.energyGain, otherEnergy.level) : diet.energyGain;
+                        energy.level = min(energy.max, energy.level + gained);
+                        if (otherEnergy != null) otherEnergy.level -= gained;
                     } else {
-                        // Kill
-                        CEnergy otherEnergy = coordinator.getComponent(other, CEnergy.class);
+                        // Consumer: take 50% of prey's energy, prey dies
+                        float gained = (otherEnergy != null) ? otherEnergy.level * 0.5f : diet.energyGain;
+                        energy.level = min(energy.max, energy.level + gained);
                         if (otherEnergy != null) otherEnergy.level = 0;
                     }
 

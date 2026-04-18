@@ -64,12 +64,17 @@ class EntityManager implements IEventListener {
             Object[] data = (Object[]) payload;
             float x = (Float) data[1];
             float y = (Float) data[2];
+            String cause = (data.length > 3 && data[3] != null) ? (String) data[3] : "";
 
-            // Mark entity at this location as dead if it's there
-            for (int i = activeEntities.size() - 1; i >= 0; i--) {
-                int e = activeEntities.get(i);
-                if (isSelected(e, x, y)) {
-                    destroyEntity(e);
+            // Only immediately destroy for CULL (user action).
+            // EATEN/STARVED deaths have energy set to 0 by the systems;
+            // the lifecycle cleanup loop handles those and spawns Corpses.
+            if (cause.equals("CULL")) {
+                for (int i = activeEntities.size() - 1; i >= 0; i--) {
+                    int e = activeEntities.get(i);
+                    if (isSelected(e, x, y)) {
+                        destroyEntity(e);
+                    }
                 }
             }
         }
