@@ -23,7 +23,7 @@ static class UIState {
 
     // Camera settings
     static float ZOOM_SPEED = 0.05;
-    static float MIN_SCALE = 0.25;
+    static float MIN_SCALE = 0.1;
 
     // World Simulation Boundaries
     static float WORLD_WIDTH = 1280 * 3;
@@ -85,18 +85,37 @@ static class UIState {
         }
     }
 
-    static PImage getSpawnCursor(SpawnType type) {
+    static PImage getSpawnCursor(PApplet app, SpawnType type) {
+        PImage original;
+        int targetW, targetH;
+        
         switch(type) {
         case ALGAE:
-            return ImageAssets.ALGAE;
+            original = ImageAssets.ALGAE;
+            targetW = 20; targetH = 20;
+            break;
         case CRAB:
-            return ImageAssets.CRAB;
+            original = ImageAssets.CRAB;
+            targetW = 40; targetH = 30;
+            break;
         case SARDINE:
-            return ImageAssets.SARDINE;
+            original = ImageAssets.SARDINE;
+            targetW = 30; targetH = 15;
+            break;
         case SHARK:
-            return ImageAssets.SHARK;
+            original = ImageAssets.SHARK;
+            targetW = 50; targetH = 25;
+            break;
+        default:
+            return null;
         }
-        return null;
+        
+        if (original == null) return null;
+        
+        // Create resized copy
+        PImage resized = app.createImage(targetW, targetH, ARGB);
+        resized.copy(original, 0, 0, original.width, original.height, 0, 0, targetW, targetH);
+        return resized;
     }
     static PImage getCullCursor(CullType type) {
         switch(type) {

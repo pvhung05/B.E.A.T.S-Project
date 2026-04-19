@@ -2,8 +2,10 @@
 // The Input Bridge: Captures raw input and translates it into simulation commands.
 
 class Controller implements IEventListener {
+    PApplet app;
 
-    Controller() {
+    Controller(PApplet app) {
+        this.app = app;
         systemBus.subscribe(EventType.EVENT_UI_TOOL_SELECTED, this);
     }
 
@@ -37,7 +39,7 @@ class Controller implements IEventListener {
             SpawnType spawnType = SpawnType.valueOf(typeName);
     
             UIState.selectedSpawn = spawnType;
-            cursor(UIState.getSpawnCursor(spawnType));
+            cursor(UIState.getSpawnCursor(app, spawnType));
         }
   }
 
