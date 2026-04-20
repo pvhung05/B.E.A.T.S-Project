@@ -59,6 +59,7 @@ class SysMetabolism extends System {
 }
 
 class SysSteering extends System {
+    // TODO: @[SysDes] Proper AI State Machine Transitions - Implement state retention, transition smoothing, and cooldowns for CRUISE, HUNT, FLEE instead of frame-by-frame top-down if-else evaluation.
 
     @Override
     void update(Coordinator coordinator, QuadTree spatialTree) {
@@ -145,6 +146,7 @@ class SysSteering extends System {
 
         if (sharkNearby && sharkCount > 0) {
             steering.state = State.FLEE;
+            // TODO: @[Core] Fleeing Steering Dynamics (F=MA) - Refactor fleeing behavior to use turnRate acceleration instead of overwriting velocity vector directly (prevents snapping/jitter).
             float fLen = sqrt(fleeX * fleeX + fleeY * fleeY);
             if (fLen > 0) {
                 velocity.vx = (fleeX / fLen) * steering.speed;
@@ -263,6 +265,7 @@ class SysSteering extends System {
     }
 
     private void updateCrabSteering(int entity, Coordinator coordinator, CTransform transform, CVelocity velocity, CSteering steering, ArrayList<Integer> nearby) {
+        // TODO: @[Core] Crab Movement & Depth (Decomposer Logic) - Add steering behavior for Crabs to naturally seek/sink to the ocean floor (minDepth: 0.75) instead of floating like fish.
         int target = -1;
         float minDist = Float.MAX_VALUE;
         for (int other : nearby) {
@@ -348,6 +351,7 @@ class SysPredation extends System {
 }
 
 class SysEnvironment extends System {
+    // TODO: @[Core] Global Environmental Physics (Tier 3) - Implement Module_Logic.processEnvironmentalDeltas() for Temperature & Pollution stress, and enforce Depth Constraints (minDepth/maxDepth).
     @Override
     void update(Coordinator coordinator, QuadTree spatialTree) {
         ArrayList<Integer> copy = new ArrayList<Integer>(entities);
