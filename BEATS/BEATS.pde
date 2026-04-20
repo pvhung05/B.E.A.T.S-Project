@@ -169,6 +169,7 @@ void draw() {
     popMatrix();
 
     // screen-space redering
+    // TODO: @[UI] Depth Overlap - Call hint(DISABLE_DEPTH_TEST) here and ENABLE_DEPTH_TEST after to ensure 2D UI draws on top of 3D P3D entities.
     uiManager.render();
     gameMenu.render();
     if (!isPaused) {
@@ -227,6 +228,7 @@ void drawWorldMarkers() {
 }
 
 void displayDebugInfo() {
+    // TODO: @[UI] Debug Info Overlap - Move debug info text position to avoid overlapping with the Spawn Menu / Sidebar on the left.
     fill(0);
     textAlign(LEFT, BOTTOM);
     textSize(14);

@@ -26,6 +26,7 @@ class SysMovement extends System {
                 velocity.vy *= -1;
             } else if (transform.y > UIState.WORLD_HEIGHT) {
                 transform.y = UIState.WORLD_HEIGHT;
+                // TODO: @[Core] Corpse Sinking Logic - Make corpses sink and stay at the bottom instead of bouncing back up.
                 velocity.vy *= -1;
             }
 
@@ -116,6 +117,7 @@ class SysSteering extends System {
             steering.state = State.CRUISE;
             if (random(1) < 0.02f) {
                 float angle = random(TWO_PI);
+                // TODO: @[Core] Shark Wandering Snapping - Refactor wander steering to use turnRate instead of assigning velocity directly.
                 velocity.vx = cos(angle) * steering.speed;
                 velocity.vy = sin(angle) * steering.speed;
             }
