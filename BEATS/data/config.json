@@ -1,6 +1,6 @@
 {
   "app": {
-    "frameRate": 300,
+    "frameRate": 60,
     "windowSize": {
       "width": 1280,
       "height": 720
@@ -23,7 +23,7 @@
   },
   "camera": {
     "zoomSpeed": 0.05,
-    "minScale": 0.25
+    "minScale": 0.07
   },
   "ui": {
     "colors": {

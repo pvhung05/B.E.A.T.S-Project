@@ -49,7 +49,7 @@ void setup() {
     entityRenderer = new EntityRenderer();
     entityFactory = new EntityFactory();
     world = new EntityManager();
-    uiController = new Controller();
+    uiController = new Controller(this);
     uiManager = new Manager();
     fxManager = new FX_Manager();
     audioManager = new AudioManager();
@@ -117,6 +117,7 @@ void loadScenario(String path) {
 }
 
 void draw() {
+    // Clear background with solid color first
     background(240);
 
     // Update camera state (clamping, matrix recalculation)
@@ -128,6 +129,38 @@ void draw() {
     // World-space rendering
     pushMatrix();
     camera.apply(g);
+    
+    // Draw background image in world space
+    if (ImageAssets.BACKGROUND != null) {
+        // When zoomed out to minimum (viewportScale >= 14.3), fill viewport
+        if (camera.viewportScale >= 14.3f) {
+            // Fill full viewport
+            image(ImageAssets.BACKGROUND, 0, 0, UIState.WORLD_WIDTH, UIState.WORLD_HEIGHT);
+        } else {
+            // Center mode (normal zoom)
+            float bgRatio = (float)ImageAssets.BACKGROUND.width / ImageAssets.BACKGROUND.height;
+            float worldRatio = UIState.WORLD_WIDTH / UIState.WORLD_HEIGHT;
+            
+            float drawWidth, drawHeight;
+            float offsetX = 0, offsetY = 0;
+            
+            if (bgRatio > worldRatio) {
+                // Background is wider than world - fit to height
+                drawHeight = UIState.WORLD_HEIGHT;
+                drawWidth = drawHeight * bgRatio;
+                offsetX = (UIState.WORLD_WIDTH - drawWidth) / 2;
+            } else {
+                // Background is taller than world - fit to width
+                drawWidth = UIState.WORLD_WIDTH;
+                drawHeight = drawWidth / bgRatio;
+                offsetY = (UIState.WORLD_HEIGHT - drawHeight) / 2;
+            }
+            
+            // Center the background image
+            image(ImageAssets.BACKGROUND, offsetX, offsetY, drawWidth, drawHeight);
+        }
+    }
+    
     entityRenderer.render(world.coordinator, world.activeEntities, camera);
     // For test camera only, look like we got a race condition with global matrix stack 
     // if we try to zoom early on at the beginning
@@ -136,6 +169,7 @@ void draw() {
     popMatrix();
 
     // screen-space redering
+    // TODO: @[UI] Depth Overlap - Call hint(DISABLE_DEPTH_TEST) here and ENABLE_DEPTH_TEST after to ensure 2D UI draws on top of 3D P3D entities.
     uiManager.render();
     gameMenu.render();
     if (!isPaused) {
@@ -143,6 +177,33 @@ void draw() {
     }
     popGraphs.render();
     displayDebugInfo();
+    
+    // Ecosystem Check
+    if (frameCount % frameRate == 0) {
+        int algae = 0, sardine = 0, crab = 0, shark = 0;
+        for (int e : world.activeEntities) {
+            CSpecies s = world.coordinator.getComponent(e, CSpecies.class);
+            if (s == null) continue;
+            if (s.type == EntityType.ALGAE) algae++;
+            else if (s.type == EntityType.SARDINE) sardine++;
+            else if (s.type == EntityType.CRAB) crab++;
+            else if (s.type == EntityType.SHARK) shark++;
+        }
+        println("Sec " + (frameCount/frameRate) + " | Algae: " + algae + " | Sardine: " + sardine + " | Crab: " + crab + " | Shark: " + shark + " | Total: " + world.activeEntities.size());
+        
+        if (algae == 0 || sardine == 0 || crab == 0 || shark == 0) {
+            println("COLLAPSE: Species extinct!");
+            throw new RuntimeException("COLLAPSE: Species extinct!");
+        }
+        if (world.activeEntities.size() > 15000) {
+            println("COLLAPSE: Overpopulation!");
+            throw new RuntimeException("COLLAPSE: Overpopulation!");
+        }
+        if (frameCount >= frameRate * 45) {
+            println("SUCCESS: Survived 45 seconds!");
+            exit();
+        }
+    }
 }
 
 void drawWorldMarkers() {
@@ -167,6 +228,7 @@ void drawWorldMarkers() {
 }
 
 void displayDebugInfo() {
+    // TODO: @[UI] Debug Info Overlap - Move debug info text position to avoid overlapping with the Spawn Menu / Sidebar on the left.
     fill(0);
     textAlign(LEFT, BOTTOM);
     textSize(14);

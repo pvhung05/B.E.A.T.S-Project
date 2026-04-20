@@ -4,12 +4,12 @@
     "energy": {
         "maxEnergy": 150,
         "metabolismRate": 0.03,
-        "hungerThreshold": 70,
-        "energyGain": 35
+        "hungerThreshold": 80,
+        "energyGain": 30
     },
     "movement": {
-        "speed": 4,
-        "turnRate": 0.1
+        "speed": 5.0,
+        "turnRate": 0.2
     },
     "ecology": {
         "minDepth": 0.2,
@@ -25,9 +25,9 @@
             "sardine"
         ],
         "visionRadius": 300,
-        "attackRadius": 12
+        "attackRadius": 15
     },
     "reproduction": {
-        "energyThreshold": 130
+        "energyThreshold": 140
     }
 }

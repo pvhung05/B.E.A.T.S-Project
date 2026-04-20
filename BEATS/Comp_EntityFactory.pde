@@ -11,8 +11,8 @@ class EntityFactory {
         coordinator.addComponent(entity, new CSpecies(species));
 
         if (species == EntityType.CORPSE) {
-            coordinator.addComponent(entity, new CTransform(x, y, 20, 20));
-            // TODO: @[Core] thêm CVelocity(0, 1.5, 0) vào CORPSE để sys movement handle việc nó chìm xuống đáy cho cua ăn.
+            coordinator.addComponent(entity, new CTransform(x, y, 15, 8));
+            coordinator.addComponent(entity, new CVelocity(0, 1.5f));
             coordinator.addComponent(entity, new CCorpse(300));
             // Energy level for decomposers to consume
             coordinator.addComponent(entity, new CEnergy(initialEnergyPct, initialEnergyPct, 0, Float.MAX_VALUE));
@@ -39,13 +39,13 @@ class EntityFactory {
         // Species-specific setup
         switch(species) {
             case ALGAE:
-                coordinator.addComponent(entity, new CTransform(x, y, 10, 10));
+                coordinator.addComponent(entity, new CTransform(x, y, 8, 8));
                 coordinator.addComponent(entity, new CEnergy(currentEnergy, maxEnergy, metabolism, reproduceThreshold));
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
                 coordinator.addComponent(entity, new CProducer(cfgFloat("algae", "energy", "photosynthesisRate")));
                 break;
             case SARDINE:
-                coordinator.addComponent(entity, new CTransform(x, y, 15, 10));
+                coordinator.addComponent(entity, new CTransform(x, y, 12, 6));
                 coordinator.addComponent(entity, new CVelocity(random(-1,1), random(-1,1)));
                 coordinator.addComponent(entity, new CEnergy(currentEnergy, maxEnergy, metabolism, reproduceThreshold));
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
@@ -54,7 +54,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CDiet(hunger * maxEnergy, gain, EntityType.ALGAE));
                 break;
             case SHARK:
-                coordinator.addComponent(entity, new CTransform(x, y, 40, 20));
+                coordinator.addComponent(entity, new CTransform(x, y, 35, 15));
                 coordinator.addComponent(entity, new CVelocity(random(-1,1), random(-1,1)));
                 coordinator.addComponent(entity, new CEnergy(currentEnergy, maxEnergy, metabolism, reproduceThreshold));
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
@@ -63,7 +63,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CDiet(hunger * maxEnergy, gain, EntityType.SARDINE));
                 break;
             case CRAB:
-                coordinator.addComponent(entity, new CTransform(x, y, 20, 20));
+                coordinator.addComponent(entity, new CTransform(x, y, 18, 12));
                 coordinator.addComponent(entity, new CVelocity(random(-1,1), random(-1,1)));
                 coordinator.addComponent(entity, new CEnergy(currentEnergy, maxEnergy, metabolism, reproduceThreshold));
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
