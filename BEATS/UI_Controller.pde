@@ -65,7 +65,7 @@ class Controller implements IEventListener {
             }
         } else if (clickedEntity == -1 && UIState.selectedSpawn != null) {
             println("Simulation Command: Spawned " + UIState.selectedSpawn + " at " + worldPos);
-            systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{UIState.selectedSpawn.name(), worldPos.x, worldPos.y, null}
+            systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{UIState.selectedSpawn.name(), worldPos.x, worldPos.y, null, "USER"}
                 );
         }
     }

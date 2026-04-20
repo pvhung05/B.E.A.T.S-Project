@@ -1,3 +1,5 @@
+// BEATS - Main sketch
+
 EventBus systemBus;
 Camera camera;
 GameMenu gameMenu;
@@ -24,6 +26,10 @@ void setup() {
 
     UIState.initColors(this);
     ImageAssets.load(this);
+    
+    println("\n=== LOADING SOUNDS ===");
+    SoundAssets.load(this);
+    println("=== SOUND LOADING DONE ===\n");
 
     // 1. Initialize Global Routing Hub First
     systemBus = new EventBus();
@@ -66,15 +72,56 @@ void setup() {
     systemBus.subscribe(EventType.EVENT_APP_PAUSE, new IEventListener() {
         void onEvent(EventType type, Object payload) {
             isPaused = true;
+            // Pause background music
+            if (SoundAssets.BACKGROUND_SOUND != null) {
+                SoundAssets.BACKGROUND_SOUND.pause();
+            }
         }
     }
     );
     systemBus.subscribe(EventType.EVENT_APP_RESUME, new IEventListener() {
         void onEvent(EventType type, Object payload) {
             isPaused = false;
+            // Resume background music
+            if (SoundAssets.BACKGROUND_SOUND != null) {
+                SoundAssets.BACKGROUND_SOUND.play();
+            }
         }
     }
     );
+
+    // Spawn sound subscription - only play for user-triggered spawns
+    systemBus.subscribe(EventType.EVENT_ENTITY_SPAWN_REQUEST, new IEventListener() {
+        void onEvent(EventType type, Object payload) {
+            Object[] data = (Object[]) payload;
+            println("DEBUG Spawn: data.length=" + data.length + ", data[4]=" + (data.length > 4 ? data[4] : "null"));
+            // Check if this is user-triggered (5th parameter = "USER")
+            if (data.length > 4 && "USER".equals(data[4])) {
+                println("✓ Playing SPAWN_SOUND");
+                playSound(SoundAssets.SPAWN_SOUND);
+            }
+        }
+    });
+
+    // Cull sound subscription - only play for user-triggered culls
+    systemBus.subscribe(EventType.EVENT_ENTITY_DESTROYED, new IEventListener() {
+        void onEvent(EventType type, Object payload) {
+            Object[] data = (Object[]) payload;
+            // Check if this is user cull (4th parameter = "CULL")
+            if (data.length > 3 && "CULL".equals(data[3])) {
+                playSound(SoundAssets.CULL_SOUND);
+            }
+        }
+    });
+
+    // Start background music
+    if (SoundAssets.BACKGROUND_SOUND != null) {
+        println("▶ Khởi động nhạc nền...");
+        SoundAssets.BACKGROUND_SOUND.loop();
+        println("✓ Nhạc nền đang phát");
+    } else {
+        println("✗ Không thể phát nhạc nền");
+    }
 
     frameRate(targetFrameRate);
 
@@ -233,4 +280,12 @@ void keyPressed() {
 
 void keyReleased() {
     if (uiController != null) uiController.handleKeyReleased(key, keyCode);
+}
+
+// Helper function to play sound
+void playSound(SoundFile sound) {
+    if (sound != null && !isPaused) {
+        sound.stop();
+        sound.play();
+    }
 }
