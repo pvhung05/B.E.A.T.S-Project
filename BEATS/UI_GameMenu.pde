@@ -26,6 +26,7 @@ class GameMenu {
     void init() {
         buttons.clear();
 
+        // TODO: @[SysDes] @[UI] Auto-Save Config - System Designer needs to define the naming and location of the config save file. UI needs to save SFX/Music volume to this file on mouse release instead of using a save button, and load it immediately on startup.
         float centerX = width / 2;
         float startY = height / 2 - 80;
 

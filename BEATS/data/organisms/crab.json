@@ -2,9 +2,9 @@
     "name": "crab",
     "type": "decomposer",
     "energy": {
-        "maxEnergy": 50,
-        "metabolismRate": 0.1,
-        "energyGain": 20
+        "maxEnergy": 100,
+        "metabolismRate": 0.02,
+        "energyGain": 15
     },
     "movement": {
         "speed": 0.5,
@@ -23,10 +23,10 @@
         "food": [
             "dead"
         ],
-        "visionRadius": 70,
+        "visionRadius": 200,
         "consumeRadius": 10
     },
     "reproduction": {
-        "energyThreshold": 40
+        "energyThreshold": 95
     }
 }
