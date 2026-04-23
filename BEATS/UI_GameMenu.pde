@@ -54,7 +54,7 @@ class GameMenu {
         musicSlider = new Slider(
             centerX - 100, startY + 130,
             200, 40,
-            "Music",
+            "Background Music",
             0, 1,
             0.5
         );
@@ -93,6 +93,13 @@ class GameMenu {
         // sliders
         sfxSlider.update();
         musicSlider.update();
+        
+        // Sync slider values to UIState
+        UIState.sfxVolume = sfxSlider.value;
+        UIState.musicVolume = musicSlider.value;
+        
+        // Apply music volume immediately (always check, especially for mute transitions)
+        audioManager.setMusicVolume(musicSlider.value);
 
         sfxSlider.render();
         musicSlider.render();

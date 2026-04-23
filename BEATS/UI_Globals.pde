@@ -15,6 +15,10 @@ static class UIState {
 
     static float temperature = 20;
     static float pollution = 10;
+    
+    // Audio volume controls (0-1 range)
+    static float sfxVolume = 0.5;
+    static float musicVolume = 0.5;
 
     // Environment Logic thresholds
     static float OPTIMAL_TEMP_MIN = 16.0;

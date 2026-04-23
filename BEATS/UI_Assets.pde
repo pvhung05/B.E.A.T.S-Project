@@ -7,14 +7,10 @@ static class ImageAssets {
     static PImage SHARK;
     static PImage CORPSE;
     static PImage FISHING;
-<<<<<<< HEAD
-    
-=======
     static PImage BACKGROUND;
     // TODO: @[UI] you may need to load SFX or Music too, so refactor the name 
     // so that it have format, or rename the class to ImageAssets instead, 
     // and have AudioAssets class for sfx/music purpose
->>>>>>> main
     static void load(PApplet app) {
         ALGAE = app.loadImage("assets/Algae_0.png");
         CRAB = app.loadImage("assets/Crab_0.png");

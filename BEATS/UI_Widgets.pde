@@ -236,11 +236,8 @@ class Button implements Widget {
     }
 
     void onClick() {
-        // Play button sound
-        if (SoundAssets.BUTTON_SOUND != null) {
-            SoundAssets.BUTTON_SOUND.stop();
-            SoundAssets.BUTTON_SOUND.play();
-        }
+        // Play button sound via event bus
+        systemBus.publish(EventType.EVENT_AUDIO_PLAY, new Object[]{"amthanhbutton.mp3", 1.0f});
         
         if (command != null) {
             command.run();
