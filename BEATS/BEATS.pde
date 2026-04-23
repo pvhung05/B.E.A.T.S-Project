@@ -84,41 +84,19 @@ void setup() {
             isPaused = false;
             // Resume background music
             if (SoundAssets.BACKGROUND_SOUND != null) {
+                SoundAssets.BACKGROUND_SOUND.amp(UIState.musicVolume);
                 SoundAssets.BACKGROUND_SOUND.play();
             }
         }
     }
     );
 
-    // Spawn sound subscription - only play for user-triggered spawns
-    systemBus.subscribe(EventType.EVENT_ENTITY_SPAWN_REQUEST, new IEventListener() {
-        void onEvent(EventType type, Object payload) {
-            Object[] data = (Object[]) payload;
-            println("DEBUG Spawn: data.length=" + data.length + ", data[4]=" + (data.length > 4 ? data[4] : "null"));
-            // Check if this is user-triggered (5th parameter = "USER")
-            if (data.length > 4 && "USER".equals(data[4])) {
-                println("✓ Playing SPAWN_SOUND");
-                playSound(SoundAssets.SPAWN_SOUND);
-            }
-        }
-    });
-
-    // Cull sound subscription - only play for user-triggered culls
-    systemBus.subscribe(EventType.EVENT_ENTITY_DESTROYED, new IEventListener() {
-        void onEvent(EventType type, Object payload) {
-            Object[] data = (Object[]) payload;
-            // Check if this is user cull (4th parameter = "CULL")
-            if (data.length > 3 && "CULL".equals(data[3])) {
-                playSound(SoundAssets.CULL_SOUND);
-            }
-        }
-    });
-
     // Start background music
     if (SoundAssets.BACKGROUND_SOUND != null) {
         println("▶ Khởi động nhạc nền...");
+        SoundAssets.BACKGROUND_SOUND.amp(UIState.musicVolume);
         SoundAssets.BACKGROUND_SOUND.loop();
-        println("✓ Nhạc nền đang phát");
+        println("✓ Nhạc nền đang phát (volume: " + nf(UIState.musicVolume, 0, 2) + ")");
     } else {
         println("✗ Không thể phát nhạc nền");
     }
@@ -215,8 +193,8 @@ void draw() {
     fxManager.render();
     popMatrix();
 
-    // screen-space redering
-    // TODO: @[UI] Depth Overlap - Call hint(DISABLE_DEPTH_TEST) here and ENABLE_DEPTH_TEST after to ensure 2D UI draws on top of 3D P3D entities.
+    // screen-space rendering
+    hint(DISABLE_DEPTH_TEST);
     uiManager.render();
     gameMenu.render();
     if (!isPaused) {
@@ -224,6 +202,7 @@ void draw() {
     }
     popGraphs.render();
     displayDebugInfo();
+    hint(ENABLE_DEPTH_TEST);
     
     // Ecosystem Check
     if (frameCount % frameRate == 0) {
@@ -275,14 +254,31 @@ void drawWorldMarkers() {
 }
 
 void displayDebugInfo() {
-    // TODO: @[UI] Debug Info Overlap - Move debug info text position to avoid overlapping with the Spawn Menu / Sidebar on the left.
     fill(0);
-    textAlign(LEFT, BOTTOM);
+    textAlign(LEFT, TOP);
     textSize(14);
-    text("FPS: " + int(frameRate), 20, 20);
-    text("Entities: " + world.activeEntities.size(), 20, 40);
-    text("Cam Center: " + nfc(camera.center.x, 1) + ", " + nfc(camera.center.y, 1), 20, 60);
-    text("Viewport Scale: " + nfc(1.0/camera.viewportScale, 2) + "x", 20, 80);
+    float y = 20;
+    float x = 20;
+    float gap = 50;
+    
+    // FPS
+    String fpsText = "FPS: " + int(frameRate);
+    text(fpsText, x, y);
+    float nextX = x + textWidth(fpsText) + gap;
+    
+    // Entities
+    String entitiesText = "Entities: " + world.activeEntities.size();
+    text(entitiesText, nextX, y);
+    nextX = nextX + textWidth(entitiesText) + gap;
+    
+    // Cam Center
+    String camText = "Cam Center: " + nfc(camera.center.x, 1) + ", " + nfc(camera.center.y, 1);
+    text(camText, nextX, y);
+    nextX = nextX + textWidth(camText) + gap;
+    
+    // Viewport Scale
+    String scaleText = "Viewport Scale: " + nf(1.0/camera.viewportScale, 0, 2) + "x";
+    text(scaleText, nextX, y);
 }
 
 void mousePressed() {
@@ -342,12 +338,4 @@ void keyPressed() {
 
 void keyReleased() {
     if (uiController != null) uiController.handleKeyReleased(key, keyCode);
-}
-
-// Helper function to play sound
-void playSound(SoundFile sound) {
-    if (sound != null && !isPaused) {
-        sound.stop();
-        sound.play();
-    }
 }
