@@ -84,7 +84,7 @@ void setup() {
             isPaused = false;
             // Resume background music
             if (SoundAssets.BACKGROUND_SOUND != null) {
-                SoundAssets.BACKGROUND_SOUND.amp(UIState.musicVolume);
+                SoundAssets.setBackgroundVolume(UIState.musicVolume);
                 SoundAssets.BACKGROUND_SOUND.play();
             }
         }
@@ -94,7 +94,7 @@ void setup() {
     // Start background music
     if (SoundAssets.BACKGROUND_SOUND != null) {
         println("▶ Khởi động nhạc nền...");
-        SoundAssets.BACKGROUND_SOUND.amp(UIState.musicVolume);
+        SoundAssets.setBackgroundVolume(UIState.musicVolume);
         SoundAssets.BACKGROUND_SOUND.loop();
         println("✓ Nhạc nền đang phát (volume: " + nf(UIState.musicVolume, 0, 2) + ")");
     } else {

@@ -1,4 +1,4 @@
-import processing.sound.*;
+import ddf.minim.*;
 
 static class ImageAssets {
     static PImage ALGAE;
@@ -23,14 +23,17 @@ static class ImageAssets {
 }
 
 static class SoundAssets {
-    static SoundFile BACKGROUND_SOUND;
-    static SoundFile SPAWN_SOUND;
-    static SoundFile CULL_SOUND;
-    static SoundFile BUTTON_SOUND;
+    static Minim minim;
+    static AudioPlayer BACKGROUND_SOUND;
+    static AudioSample SPAWN_SOUND;
+    static AudioSample CULL_SOUND;
+    static AudioSample BUTTON_SOUND;
     
     static void load(PApplet app) {
+        minim = new Minim(app);
+
         try {
-            BACKGROUND_SOUND = new SoundFile(app, "sound/nhacnen.mp3");
+            BACKGROUND_SOUND = minim.loadFile("sound/nhacnen.mp3");
             println("✓ Âm thanh: nhacnen.mp3");
         } catch (Exception e) {
             println("✗ Lỗi nhacnen.mp3");
@@ -38,7 +41,7 @@ static class SoundAssets {
         }
         
         try {
-            SPAWN_SOUND = new SoundFile(app, "sound/amthanhspawn.mp3");
+            SPAWN_SOUND = minim.loadSample("sound/amthanhspawn.mp3");
             println("✓ Âm thanh: amthanhspawn.mp3");
         } catch (Exception e) {
             println("✗ Lỗi amthanhspawn.mp3");
@@ -46,7 +49,7 @@ static class SoundAssets {
         }
         
         try {
-            CULL_SOUND = new SoundFile(app, "sound/amthanhcull.mp3");
+            CULL_SOUND = minim.loadSample("sound/amthanhcull.mp3");
             println("✓ Âm thanh: amthanhcull.mp3");
         } catch (Exception e) {
             println("✗ Lỗi amthanhcull.mp3");
@@ -54,11 +57,38 @@ static class SoundAssets {
         }
         
         try {
-            BUTTON_SOUND = new SoundFile(app, "sound/amthanhbutton.mp3");
+            BUTTON_SOUND = minim.loadSample("sound/amthanhbutton.mp3");
             println("✓ Âm thanh: amthanhbutton.mp3");
         } catch (Exception e) {
             println("✗ Lỗi amthanhbutton.mp3");
             BUTTON_SOUND = null;
         }
+    }
+
+    static void setBackgroundVolume(float linearVolume) {
+        if (BACKGROUND_SOUND == null) return;
+        if (BACKGROUND_SOUND.hasControl(ddf.minim.Controller.GAIN)) {
+            BACKGROUND_SOUND.setGain(linearToGain(linearVolume));
+        }
+    }
+
+    static void setSampleVolume(AudioSample sample, float linearVolume) {
+        if (sample == null) return;
+        if (sample.hasControl(ddf.minim.Controller.GAIN)) {
+            sample.setGain(linearToGain(linearVolume));
+        }
+    }
+
+    static void setPlayerVolume(AudioPlayer player, float linearVolume) {
+        if (player == null) return;
+        if (player.hasControl(ddf.minim.Controller.GAIN)) {
+            player.setGain(linearToGain(linearVolume));
+        }
+    }
+
+    static float linearToGain(float linearVolume) {
+        float clamped = constrain(linearVolume, 0.0f, 1.0f);
+        if (clamped <= 0.0f) return -80.0f;
+        return 20.0f * log(clamped) / log(10.0f);
     }
 }
