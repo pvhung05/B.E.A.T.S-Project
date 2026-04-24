@@ -1,3 +1,5 @@
+// BEATS - Main sketch
+
 EventBus systemBus;
 Camera camera;
 GameMenu gameMenu;
@@ -24,6 +26,10 @@ void setup() {
 
     UIState.initColors(this);
     ImageAssets.load(this);
+    
+    println("\n=== LOADING SOUNDS ===");
+    SoundAssets.load(this);
+    println("=== SOUND LOADING DONE ===\n");
 
     // 1. Initialize Global Routing Hub First
     systemBus = new EventBus();
@@ -66,15 +72,34 @@ void setup() {
     systemBus.subscribe(EventType.EVENT_APP_PAUSE, new IEventListener() {
         void onEvent(EventType type, Object payload) {
             isPaused = true;
+            // Pause background music
+            if (SoundAssets.BACKGROUND_SOUND != null) {
+                SoundAssets.BACKGROUND_SOUND.pause();
+            }
         }
     }
     );
     systemBus.subscribe(EventType.EVENT_APP_RESUME, new IEventListener() {
         void onEvent(EventType type, Object payload) {
             isPaused = false;
+            // Resume background music
+            if (SoundAssets.BACKGROUND_SOUND != null) {
+                SoundAssets.setBackgroundVolume(UIState.musicVolume);
+                SoundAssets.BACKGROUND_SOUND.play();
+            }
         }
     }
     );
+
+    // Start background music
+    if (SoundAssets.BACKGROUND_SOUND != null) {
+        println("▶ Khởi động nhạc nền...");
+        SoundAssets.setBackgroundVolume(UIState.musicVolume);
+        SoundAssets.BACKGROUND_SOUND.loop();
+        println("✓ Nhạc nền đang phát (volume: " + nf(UIState.musicVolume, 0, 2) + ")");
+    } else {
+        println("✗ Không thể phát nhạc nền");
+    }
 
     frameRate(targetFrameRate);
 
@@ -168,8 +193,8 @@ void draw() {
     fxManager.render();
     popMatrix();
 
-    // screen-space redering
-    // TODO: @[UI] Depth Overlap - Call hint(DISABLE_DEPTH_TEST) here and ENABLE_DEPTH_TEST after to ensure 2D UI draws on top of 3D P3D entities.
+    // screen-space rendering
+    hint(DISABLE_DEPTH_TEST);
     uiManager.render();
     gameMenu.render();
     if (!isPaused) {
@@ -177,6 +202,7 @@ void draw() {
     }
     popGraphs.render();
     displayDebugInfo();
+    hint(ENABLE_DEPTH_TEST);
     
     // Ecosystem Check
     if (frameCount % frameRate == 0) {
@@ -228,14 +254,31 @@ void drawWorldMarkers() {
 }
 
 void displayDebugInfo() {
-    // TODO: @[UI] Debug Info Overlap - Move debug info text position to avoid overlapping with the Spawn Menu / Sidebar on the left.
     fill(0);
-    textAlign(LEFT, BOTTOM);
+    textAlign(LEFT, TOP);
     textSize(14);
-    text("FPS: " + int(frameRate), 20, 20);
-    text("Entities: " + world.activeEntities.size(), 20, 40);
-    text("Cam Center: " + nfc(camera.center.x, 1) + ", " + nfc(camera.center.y, 1), 20, 60);
-    text("Viewport Scale: " + nfc(1.0/camera.viewportScale, 2) + "x", 20, 80);
+    float y = 20;
+    float x = 20;
+    float gap = 50;
+    
+    // FPS
+    String fpsText = "FPS: " + int(frameRate);
+    text(fpsText, x, y);
+    float nextX = x + textWidth(fpsText) + gap;
+    
+    // Entities
+    String entitiesText = "Entities: " + world.activeEntities.size();
+    text(entitiesText, nextX, y);
+    nextX = nextX + textWidth(entitiesText) + gap;
+    
+    // Cam Center
+    String camText = "Cam Center: " + nfc(camera.center.x, 1) + ", " + nfc(camera.center.y, 1);
+    text(camText, nextX, y);
+    nextX = nextX + textWidth(camText) + gap;
+    
+    // Viewport Scale
+    String scaleText = "Viewport Scale: " + nf(1.0/camera.viewportScale, 0, 2) + "x";
+    text(scaleText, nextX, y);
 }
 
 void mousePressed() {

@@ -236,6 +236,9 @@ class Button implements Widget {
     }
 
     void onClick() {
+        // Play button sound via event bus
+        systemBus.publish(EventType.EVENT_AUDIO_PLAY, new Object[]{"amthanhbutton.mp3", 1.0f});
+        
         if (command != null) {
             command.run();
         }
@@ -292,7 +295,7 @@ class Slider implements Widget {
         text(nf(value, 1, 1), x + w + 10, y + h / 2);
 
         // slider line
-        float lineY = y + h - 10;
+        float lineY = y + h / 2;
 
         stroke(160);
         line(x + 10, lineY, x + w - 10, lineY);
@@ -315,8 +318,9 @@ class Slider implements Widget {
 
     void onClick() {
         float knobX = map(value, minVal, maxVal, x + 10, x + w - 10);
+        float knobY = y + h / 2;
 
-        if (dist(mouseX, mouseY, knobX, y + h - 10) < 10) {
+        if (dist(mouseX, mouseY, knobX, knobY) < 10) {
             dragging = true;
         }
     }
