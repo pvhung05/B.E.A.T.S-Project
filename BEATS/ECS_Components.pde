@@ -59,6 +59,13 @@ class CSteering extends Component {
     float speed;
     float turnRate;
     State state = State.CRUISE;
+
+    // --- State Machine Fields ---
+    int stateTimer = 0;          // Frames spent in current state
+    int stateCooldown = 30;      // Min frames before allowing state change (~0.5s at 60fps)
+    float fleeSpeedMult = 1.5f;  // Speed multiplier when fleeing
+    float huntSpeedMult = 1.2f;  // Speed multiplier when hunting
+
     CSteering(float speed, float turnRate) {
         this.speed = speed;
         this.turnRate = turnRate;

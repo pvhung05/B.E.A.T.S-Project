@@ -60,7 +60,36 @@ class SysMetabolism extends System {
 }
 
 class SysSteering extends System {
-    // TODO: @[SysDes] Proper AI State Machine Transitions - Implement state retention, transition smoothing, and cooldowns for CRUISE, HUNT, FLEE instead of frame-by-frame top-down if-else evaluation.
+
+    /**
+     * Attempt a guarded state transition.
+     * FLEE always bypasses cooldown (survival priority).
+     * Other transitions require the cooldown timer to have elapsed.
+     * Returns true if the entity is now in the desired state.
+     */
+    private boolean tryTransition(CSteering steering, State desired) {
+        if (steering.state == desired) {
+            steering.stateTimer++;
+            return true;
+        }
+        // FLEE always overrides immediately — survival takes priority
+        if (desired == State.FLEE || steering.stateTimer >= steering.stateCooldown) {
+            steering.state = desired;
+            steering.stateTimer = 0;
+            return true;
+        }
+        steering.stateTimer++;
+        return false; // Cooldown not met — stay in current state
+    }
+
+    /** Returns speed adjusted by the current AI state multiplier. */
+    private float effectiveSpeed(CSteering steering) {
+        switch (steering.state) {
+            case FLEE: return steering.speed * steering.fleeSpeedMult;
+            case HUNT: return steering.speed * steering.huntSpeedMult;
+            default:   return steering.speed;
+        }
+    }
 
     @Override
     void update(Coordinator coordinator, QuadTree spatialTree) {
@@ -101,39 +130,39 @@ class SysSteering extends System {
             }
         }
 
-        if (target != -1) {
-            steering.state = State.HUNT;
+        if (target != -1 && tryTransition(steering, State.HUNT)) {
             CTransform targetT = coordinator.getComponent(target, CTransform.class);
             float dx = targetT.x - transform.x;
             float dy = targetT.y - transform.y;
             float len = sqrt(dx * dx + dy * dy);
+            float spd = effectiveSpeed(steering);
             if (len > 0) {
-                float targetVx = (dx / len) * steering.speed;
-                float targetVy = (dy / len) * steering.speed;
+                float targetVx = (dx / len) * spd;
+                float targetVy = (dy / len) * spd;
                 velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
                 velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
             }
-        } else {
-            steering.state = State.CRUISE;
+        } else if (target == -1 && tryTransition(steering, State.CRUISE)) {
             if (random(1) < 0.02f) {
                 float angle = random(TWO_PI);
                 // TODO: @[Core] Shark Wandering Snapping - Refactor wander steering to use turnRate instead of assigning velocity directly.
                 velocity.vx = cos(angle) * steering.speed;
                 velocity.vy = sin(angle) * steering.speed;
             }
+        } else {
+            // Cooldown active — continue current behavior
+            steering.stateTimer++;
         }
     }
 
     private void updateSardineSteering(int entity, Coordinator coordinator, CTransform transform, CVelocity velocity, CSteering steering, ArrayList<Integer> nearby, QuadTree spatialTree) {
-        // Schooling + Fleeing
-        boolean sharkNearby = false;
+        // 1. Scan for threats
         float fleeX = 0, fleeY = 0;
         int sharkCount = 0;
 
         for (int other : nearby) {
             CSpecies s = coordinator.getComponent(other, CSpecies.class);
             if (s != null && s.type == EntityType.SHARK) {
-                sharkNearby = true;
                 CTransform otherT = coordinator.getComponent(other, CTransform.class);
                 float dx = transform.x - otherT.x;
                 float dy = transform.y - otherT.y;
@@ -146,54 +175,61 @@ class SysSteering extends System {
             }
         }
 
-        if (sharkNearby && sharkCount > 0) {
-            steering.state = State.FLEE;
-            // TODO: @[Core] Fleeing Steering Dynamics (F=MA) - Refactor fleeing behavior to use turnRate acceleration instead of overwriting velocity vector directly (prevents snapping/jitter).
+        // 2. FLEE — always bypasses cooldown (survival priority)
+        if (sharkCount > 0 && tryTransition(steering, State.FLEE)) {
+            float spd = effectiveSpeed(steering);
             float fLen = sqrt(fleeX * fleeX + fleeY * fleeY);
             if (fLen > 0) {
-                velocity.vx = (fleeX / fLen) * steering.speed;
-                velocity.vy = (fleeY / fLen) * steering.speed;
+                // Use turnRate steering instead of direct velocity overwrite (smoother flee)
+                float targetVx = (fleeX / fLen) * spd;
+                float targetVy = (fleeY / fLen) * spd;
+                velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
+                velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
             }
+            return;
+        }
+
+        // 3. HUNT — pursue prey if hungry
+        CEnergy energy = coordinator.getComponent(entity, CEnergy.class);
+        CDiet diet = coordinator.getComponent(entity, CDiet.class);
+
+        if (energy != null && diet != null && energy.level < diet.hungerThreshold) {
+            int prey = -1;
+            float minDist = Float.MAX_VALUE;
+            for (int other : nearby) {
+                CSpecies otherS = coordinator.getComponent(other, CSpecies.class);
+                if (otherS != null && diet.prey.contains(otherS.type)) {
+                    CTransform otherT = coordinator.getComponent(other, CTransform.class);
+                    float d = dist(transform.x, transform.y, otherT.x, otherT.y);
+                    if (d < minDist) {
+                        minDist = d;
+                        prey = other;
+                    }
+                }
+            }
+
+            if (prey != -1 && tryTransition(steering, State.HUNT)) {
+                CTransform preyT = coordinator.getComponent(prey, CTransform.class);
+                float dx = preyT.x - transform.x;
+                float dy = preyT.y - transform.y;
+                float len = sqrt(dx * dx + dy * dy);
+                float spd = effectiveSpeed(steering);
+                if (len > 0) {
+                    float targetVx = (dx / len) * spd;
+                    float targetVy = (dy / len) * spd;
+                    velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
+                    velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
+                }
+                return;
+            }
+        }
+
+        // 4. CRUISE — schooling / wandering
+        if (tryTransition(steering, State.CRUISE)) {
+            applySardineSchooling(entity, coordinator, transform, velocity, steering, spatialTree);
         } else {
-            steering.state = State.CRUISE;
-            CEnergy energy = coordinator.getComponent(entity, CEnergy.class);
-            CDiet diet = coordinator.getComponent(entity, CDiet.class);
-            
-            boolean hunting = false;
-            if (energy != null && diet != null && energy.level < diet.hungerThreshold) {
-                int prey = -1;
-                float minDist = Float.MAX_VALUE;
-                for (int other : nearby) {
-                    CSpecies otherS = coordinator.getComponent(other, CSpecies.class);
-                    if (otherS != null && diet.prey.contains(otherS.type)) {
-                        CTransform otherT = coordinator.getComponent(other, CTransform.class);
-                        float d = dist(transform.x, transform.y, otherT.x, otherT.y);
-                        if (d < minDist) {
-                            minDist = d;
-                            prey = other;
-                        }
-                    }
-                }
-                
-                if (prey != -1) {
-                    steering.state = State.HUNT;
-                    CTransform preyT = coordinator.getComponent(prey, CTransform.class);
-                    float dx = preyT.x - transform.x;
-                    float dy = preyT.y - transform.y;
-                    float len = sqrt(dx * dx + dy * dy);
-                    if (len > 0) {
-                        float targetVx = (dx / len) * steering.speed;
-                        float targetVy = (dy / len) * steering.speed;
-                        velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
-                        velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
-                        hunting = true;
-                    }
-                }
-            }
-            
-            if (!hunting) {
-                applySardineSchooling(entity, coordinator, transform, velocity, steering, spatialTree);
-            }
+            // Cooldown active — continue current behavior
+            steering.stateTimer++;
         }
     }
 
@@ -282,23 +318,27 @@ class SysSteering extends System {
             }
         }
 
-        if (target != -1) {
+        if (target != -1 && tryTransition(steering, State.HUNT)) {
             CTransform targetT = coordinator.getComponent(target, CTransform.class);
             float dx = targetT.x - transform.x;
             float dy = targetT.y - transform.y;
             float len = sqrt(dx * dx + dy * dy);
+            float spd = effectiveSpeed(steering);
             if (len > 0) {
-                float targetVx = (dx / len) * steering.speed;
-                float targetVy = (dy / len) * steering.speed;
+                float targetVx = (dx / len) * spd;
+                float targetVy = (dy / len) * spd;
                 velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
                 velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
             }
-        } else {
+        } else if (target == -1 && tryTransition(steering, State.CRUISE)) {
             if (random(1) < 0.02f) {
                 float angle = random(TWO_PI);
                 velocity.vx = cos(angle) * steering.speed;
                 velocity.vy = sin(angle) * steering.speed;
             }
+        } else {
+            // Cooldown active — continue current behavior
+            steering.stateTimer++;
         }
 
         if (transform.y > UIState.WORLD_HEIGHT) transform.y = UIState.WORLD_HEIGHT;
