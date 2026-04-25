@@ -66,6 +66,10 @@ class CSteering extends Component {
     float fleeSpeedMult = 1.5f;  // Speed multiplier when fleeing
     float huntSpeedMult = 1.2f;  // Speed multiplier when hunting
 
+    // --- Wander Target (persistent F=MA target for CRUISE state) ---
+    float wanderTargetVx = 0;
+    float wanderTargetVy = 0;
+
     CSteering(float speed, float turnRate) {
         this.speed = speed;
         this.turnRate = turnRate;
