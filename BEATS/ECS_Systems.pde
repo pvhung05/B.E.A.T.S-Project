@@ -21,17 +21,28 @@ class SysMovement extends System {
                 velocity.vx *= -1;
             }
 
+            CCorpse corpse = coordinator.getComponent(entity, CCorpse.class);
+
             if (transform.y < 0) {
                 transform.y = 0;
                 velocity.vy *= -1;
             } else if (transform.y > UIState.WORLD_HEIGHT) {
                 transform.y = UIState.WORLD_HEIGHT;
-                // TODO: @[Core] Corpse Sinking Logic - Make corpses sink and stay at the bottom instead of bouncing back up.
-                velocity.vy *= -1;
+                if (corpse != null) {
+                    velocity.vx = 0;
+                    velocity.vy = 0;
+                } else {
+                    velocity.vy *= -1;
+                }
             }
 
             if (velocity.vx != 0 || velocity.vy != 0) {
                 velocity.yAngle = atan2(velocity.vy, velocity.vx);
+            }
+
+            // Corpse decay — here because CORPSE has no CEcology and is excluded from SysEnvironment
+            if (corpse != null) {
+                corpse.lifetime--;
             }
         }
     }
@@ -145,10 +156,11 @@ class SysSteering extends System {
         } else if (target == -1 && tryTransition(steering, State.CRUISE)) {
             if (random(1) < 0.02f) {
                 float angle = random(TWO_PI);
-                // TODO: @[Core] Shark Wandering Snapping - Refactor wander steering to use turnRate instead of assigning velocity directly.
-                velocity.vx = cos(angle) * steering.speed;
-                velocity.vy = sin(angle) * steering.speed;
+                steering.wanderTargetVx = cos(angle) * steering.speed;
+                steering.wanderTargetVy = sin(angle) * steering.speed;
             }
+            velocity.vx += (steering.wanderTargetVx - velocity.vx) * steering.turnRate;
+            velocity.vy += (steering.wanderTargetVy - velocity.vy) * steering.turnRate;
         } else {
             // Cooldown active — continue current behavior
             steering.stateTimer++;
@@ -234,10 +246,10 @@ class SysSteering extends System {
     }
 
     private void applySardineSchooling(int entity, Coordinator coordinator, CTransform transform, CVelocity velocity, CSteering steering, QuadTree spatialTree) {
-        float schoolRadius    = cfgFloatOr("sardine", "movement", "schoolRadius",    60.0f);
-        float alignWeight     = cfgFloatOr("sardine", "movement", "alignWeight",      1.0f);
-        float cohesionWeight  = cfgFloatOr("sardine", "movement", "cohesionWeight",   0.8f);
-        float separationWeight= cfgFloatOr("sardine", "movement", "separationWeight", 1.2f);
+        float schoolRadius    = cfgFloatOr("sardine", "schooling", "radius",           60.0f);
+        float alignWeight     = cfgFloatOr("sardine", "schooling", "alignmentWeight",  1.0f);
+        float cohesionWeight  = cfgFloatOr("sardine", "schooling", "cohesionWeight",   0.8f);
+        float separationWeight= cfgFloatOr("sardine", "schooling", "separationWeight", 1.2f);
 
         ArrayList<Integer> school = new ArrayList<Integer>();
         spatialTree.query(coordinator, transform.x, transform.y, schoolRadius, school);
@@ -296,14 +308,15 @@ class SysSteering extends System {
         } else {
             if (random(1) < 0.02f) {
                 float angle = random(TWO_PI);
-                velocity.vx = cos(angle) * steering.speed;
-                velocity.vy = sin(angle) * steering.speed;
+                steering.wanderTargetVx = cos(angle) * steering.speed;
+                steering.wanderTargetVy = sin(angle) * steering.speed;
             }
+            velocity.vx += (steering.wanderTargetVx - velocity.vx) * steering.turnRate;
+            velocity.vy += (steering.wanderTargetVy - velocity.vy) * steering.turnRate;
         }
     }
 
     private void updateCrabSteering(int entity, Coordinator coordinator, CTransform transform, CVelocity velocity, CSteering steering, ArrayList<Integer> nearby) {
-        // TODO: @[Core] Crab Movement & Depth (Decomposer Logic) - Add steering behavior for Crabs to naturally seek/sink to the ocean floor (minDepth: 0.75) instead of floating like fish.
         int target = -1;
         float minDist = Float.MAX_VALUE;
         for (int other : nearby) {
@@ -331,13 +344,21 @@ class SysSteering extends System {
                 velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
             }
         } else if (target == -1 && tryTransition(steering, State.CRUISE)) {
-            if (random(1) < 0.02f) {
-                float angle = random(TWO_PI);
-                velocity.vx = cos(angle) * steering.speed;
-                velocity.vy = sin(angle) * steering.speed;
+            CEcology ecology = coordinator.getComponent(entity, CEcology.class);
+            float floorY = (ecology != null ? ecology.minDepth : 0.75f) * UIState.WORLD_HEIGHT;
+
+            if (transform.y < floorY) {
+                steering.wanderTargetVx = 0;
+                steering.wanderTargetVy = steering.speed;
+            } else {
+                if (random(1) < 0.02f) {
+                    steering.wanderTargetVx = (random(1) < 0.5f ? 1 : -1) * steering.speed;
+                    steering.wanderTargetVy = 0;
+                }
             }
+            velocity.vx += (steering.wanderTargetVx - velocity.vx) * steering.turnRate;
+            velocity.vy += (steering.wanderTargetVy - velocity.vy) * steering.turnRate;
         } else {
-            // Cooldown active — continue current behavior
             steering.stateTimer++;
         }
 
@@ -393,7 +414,6 @@ class SysPredation extends System {
 }
 
 class SysEnvironment extends System {
-    // TODO: @[Core] Global Environmental Physics (Tier 3) - Implement Module_Logic.processEnvironmentalDeltas() for Temperature & Pollution stress, and enforce Depth Constraints (minDepth/maxDepth).
     @Override
     void update(Coordinator coordinator, QuadTree spatialTree) {
         ArrayList<Integer> copy = new ArrayList<Integer>(entities);
@@ -401,9 +421,13 @@ class SysEnvironment extends System {
             CTransform transform = coordinator.getComponent(entity, CTransform.class);
             CEnergy energy = coordinator.getComponent(entity, CEnergy.class);
             CEcology ecology = coordinator.getComponent(entity, CEcology.class);
+            CSpecies species = coordinator.getComponent(entity, CSpecies.class);
 
-            // Temperature Stress
-            if (UIState.temperature < ecology.minDepth * 100 || UIState.temperature > ecology.maxDepth * 100) {
+            // Temperature Stress — read actual temperature tolerance from JSON
+            String sName = species.type.name().toLowerCase();
+            float minTemp = cfgFloatOr(sName, "ecology", "minTemperature", 0.0f);
+            float maxTemp = cfgFloatOr(sName, "ecology", "maxTemperature", 100.0f);
+            if (UIState.temperature < minTemp || UIState.temperature > maxTemp) {
                 energy.level -= energy.metabolism * 0.5f;
             }
 
@@ -412,17 +436,17 @@ class SysEnvironment extends System {
                 energy.level -= (UIState.pollution - UIState.POLLUTION_STRESS_THRESHOLD) * 0.01f;
             }
 
+            // Depth Constraint Stress — penalise entities outside their preferred depth zone
+            float normalizedDepth = transform.y / UIState.WORLD_HEIGHT;
+            if (normalizedDepth < ecology.minDepth || normalizedDepth > ecology.maxDepth) {
+                energy.level -= energy.metabolism * 0.5f;
+            }
+
             // Producer specific
             CProducer producer = coordinator.getComponent(entity, CProducer.class);
             if (producer != null) {
                 float depthFactor = 1.0f - (transform.y / UIState.WORLD_HEIGHT);
                 energy.level = min(energy.max, energy.level + producer.photosynthesisRate * depthFactor);
-            }
-
-            // Corpse specific
-            CCorpse corpse = coordinator.getComponent(entity, CCorpse.class);
-            if (corpse != null) {
-                corpse.lifetime--;
             }
         }
     }

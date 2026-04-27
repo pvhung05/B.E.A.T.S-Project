@@ -31,9 +31,13 @@ class EntityFactory {
         float turnRate = cfgFloatOr(species.name().toLowerCase(), "movement", "turnRate", 0);
 
         float vision = cfgFloatOr(species.name().toLowerCase(), "feeding", "visionRadius", 0);
-        float attack = cfgFloatOr(species.name().toLowerCase(), "feeding", "attackRadius", 15);
+        // Decomposers use consumeRadius (schema §5); consumers use attackRadius
+        float attack = (species == EntityType.CRAB)
+            ? cfgFloatOr("crab", "feeding", "consumeRadius", 15)
+            : cfgFloatOr(species.name().toLowerCase(), "feeding", "attackRadius", 15);
         
-        float hunger = cfgFloatOr(species.name().toLowerCase(), "energy", "hungerThreshold", 0.5f);
+        // hungerThreshold in JSON is an absolute energy value (e.g. 50 out of maxEnergy 100)
+        float hunger = cfgFloatOr(species.name().toLowerCase(), "energy", "hungerThreshold", maxEnergy * 0.5f);
         float gain = cfgFloatOr(species.name().toLowerCase(), "energy", "energyGain", 10.0f);
 
         // Species-specific setup
@@ -51,7 +55,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
                 coordinator.addComponent(entity, new CSteering(speed, turnRate));
                 coordinator.addComponent(entity, new CSenses(vision, attack));
-                coordinator.addComponent(entity, new CDiet(hunger * maxEnergy, gain, EntityType.ALGAE));
+                coordinator.addComponent(entity, new CDiet(hunger, gain, EntityType.ALGAE));
                 break;
             case SHARK:
                 coordinator.addComponent(entity, new CTransform(x, y, 35, 15));
@@ -60,7 +64,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
                 coordinator.addComponent(entity, new CSteering(speed, turnRate));
                 coordinator.addComponent(entity, new CSenses(vision, attack));
-                coordinator.addComponent(entity, new CDiet(hunger * maxEnergy, gain, EntityType.SARDINE));
+                coordinator.addComponent(entity, new CDiet(hunger, gain, EntityType.SARDINE));
                 break;
             case CRAB:
                 coordinator.addComponent(entity, new CTransform(x, y, 18, 12));
@@ -69,7 +73,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
                 coordinator.addComponent(entity, new CSteering(speed, turnRate));
                 coordinator.addComponent(entity, new CSenses(vision, attack));
-                coordinator.addComponent(entity, new CDiet(hunger * maxEnergy, gain, EntityType.CORPSE));
+                coordinator.addComponent(entity, new CDiet(hunger, gain, EntityType.CORPSE));
                 break;
         }
 
