@@ -22,6 +22,7 @@ class SysMovement extends System {
             }
 
             CCorpse corpse = coordinator.getComponent(entity, CCorpse.class);
+            CSpecies species = coordinator.getComponent(entity, CSpecies.class);
 
             if (transform.y < 0) {
                 transform.y = 0;
@@ -30,6 +31,8 @@ class SysMovement extends System {
                 transform.y = UIState.WORLD_HEIGHT;
                 if (corpse != null) {
                     velocity.vx = 0;
+                    velocity.vy = 0;
+                } else if (species != null && species.type == EntityType.CRAB) {
                     velocity.vy = 0;
                 } else {
                     velocity.vy *= -1;
@@ -351,8 +354,8 @@ class SysSteering extends System {
                 applySteeringForce(velocity, targetVx, targetVy, steering.turnRate);
             }
         } else if (target == -1 && tryTransition(steering, State.CRUISE)) {
-            CEcology ecology = coordinator.getComponent(entity, CEcology.class);
-            float floorY = (ecology != null ? ecology.minDepth : 0.75f) * UIState.WORLD_HEIGHT;
+            // Crabs should stay strictly at the ocean floor to find corpses
+            float floorY = UIState.WORLD_HEIGHT - 5;
 
             if (transform.y < floorY) {
                 steering.wanderTargetVx = 0;
