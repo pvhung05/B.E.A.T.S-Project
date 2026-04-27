@@ -21,6 +21,7 @@ class EntityManager implements IEventListener {
         coordinator.registerComponent(CDiet.class);
         coordinator.registerComponent(CProducer.class);
         coordinator.registerComponent(CCorpse.class);
+        coordinator.registerComponent(CMeat.class);
 
         // 2. Register Systems
         coordinator.registerSystem(SysEnvironment.class, new SysEnvironment(), 
@@ -110,14 +111,15 @@ class EntityManager implements IEventListener {
             int e = activeEntities.get(i);
             CEnergy energy = coordinator.getComponent(e, CEnergy.class);
             CCorpse corpse = coordinator.getComponent(e, CCorpse.class);
+            CMeat meat = coordinator.getComponent(e, CMeat.class);
             
             boolean isDead = false;
             if (energy != null && energy.level <= 0) isDead = true;
             if (corpse != null && corpse.lifetime <= 0) isDead = true;
 
             if (isDead) {
-                // Spawn corpse if it was an organism (has energy and is not already a corpse)
-                if (energy != null && corpse == null) {
+                // Spawn corpse if it was an organism with meat (has energy, has CMeat, and is not already a corpse)
+                if (energy != null && corpse == null && meat != null) {
                     CTransform t = coordinator.getComponent(e, CTransform.class);
                     systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{
                         "CORPSE", t.x, t.y, max(10.0f, energy.level)

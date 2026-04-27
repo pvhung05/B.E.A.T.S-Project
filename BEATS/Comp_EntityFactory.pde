@@ -13,7 +13,7 @@ class EntityFactory {
         if (species == EntityType.CORPSE) {
             coordinator.addComponent(entity, new CTransform(x, y, 15, 8));
             coordinator.addComponent(entity, new CVelocity(0, 1.5f));
-            coordinator.addComponent(entity, new CCorpse(300));
+            coordinator.addComponent(entity, new CCorpse(3000));
             // Energy level for decomposers to consume
             coordinator.addComponent(entity, new CEnergy(initialEnergyPct, initialEnergyPct, 0, Float.MAX_VALUE));
             return entity;
@@ -56,6 +56,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CSteering(speed, turnRate));
                 coordinator.addComponent(entity, new CSenses(vision, attack));
                 coordinator.addComponent(entity, new CDiet(hunger, gain, EntityType.ALGAE));
+                coordinator.addComponent(entity, new CMeat());
                 break;
             case SHARK:
                 coordinator.addComponent(entity, new CTransform(x, y, 35, 15));
@@ -65,6 +66,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CSteering(speed, turnRate));
                 coordinator.addComponent(entity, new CSenses(vision, attack));
                 coordinator.addComponent(entity, new CDiet(hunger, gain, EntityType.SARDINE));
+                coordinator.addComponent(entity, new CMeat());
                 break;
             case CRAB:
                 coordinator.addComponent(entity, new CTransform(x, y, 18, 12));
@@ -74,6 +76,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CSteering(speed, turnRate));
                 coordinator.addComponent(entity, new CSenses(vision, attack));
                 coordinator.addComponent(entity, new CDiet(hunger, gain, EntityType.CORPSE));
+                coordinator.addComponent(entity, new CMeat());
                 break;
         }
 
