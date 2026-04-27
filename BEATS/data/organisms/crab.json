@@ -4,6 +4,7 @@
     "energy": {
         "maxEnergy": 100,
         "metabolismRate": 0.02,
+        "hungerThreshold": 95,
         "energyGain": 15
     },
     "movement": {
