@@ -205,7 +205,7 @@ void draw() {
     hint(ENABLE_DEPTH_TEST);
     
     // Ecosystem Check
-    if (frameCount % frameRate == 0) {
+    if (frameCount % 60 == 0) {
         int algae = 0, sardine = 0, crab = 0, shark = 0;
         for (int e : world.activeEntities) {
             CSpecies s = world.coordinator.getComponent(e, CSpecies.class);

@@ -386,7 +386,7 @@ class SysPredation extends System {
             CDiet diet = coordinator.getComponent(entity, CDiet.class);
 
             if (energy == null || transform == null || senses == null || diet == null) continue;
-            if (energy.level > energy.max * 0.8f) continue;
+            if (energy.level >= energy.max) continue;
 
             ArrayList<Integer> nearby = new ArrayList<Integer>();
             spatialTree.query(coordinator, transform.x, transform.y, senses.attackRadius, nearby);

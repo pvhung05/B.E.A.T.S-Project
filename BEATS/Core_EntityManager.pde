@@ -122,7 +122,7 @@ class EntityManager implements IEventListener {
                 if (energy != null && corpse == null && meat != null) {
                     CTransform t = coordinator.getComponent(e, CTransform.class);
                     systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{
-                        "CORPSE", t.x, t.y, max(10.0f, energy.level)
+                        "CORPSE", t.x, t.y, energy.max
                     });
                 }
                 destroyEntity(e);
