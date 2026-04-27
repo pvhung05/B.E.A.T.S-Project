@@ -2,8 +2,10 @@
 // The Input Bridge: Captures raw input and translates it into simulation commands.
 
 class Controller implements IEventListener {
+    PApplet app;
 
-    Controller() {
+    Controller(PApplet app) {
+        this.app = app;
         systemBus.subscribe(EventType.EVENT_UI_TOOL_SELECTED, this);
     }
 
@@ -37,7 +39,7 @@ class Controller implements IEventListener {
             SpawnType spawnType = SpawnType.valueOf(typeName);
     
             UIState.selectedSpawn = spawnType;
-            cursor(UIState.getSpawnCursor(spawnType));
+            cursor(UIState.getSpawnCursor(app, spawnType));
         }
   }
 
@@ -65,12 +67,13 @@ class Controller implements IEventListener {
             }
         } else if (clickedEntity == -1 && UIState.selectedSpawn != null) {
             println("Simulation Command: Spawned " + UIState.selectedSpawn + " at " + worldPos);
-            systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{UIState.selectedSpawn.name(), worldPos.x, worldPos.y, null}
-                );
+            systemBus.publish(EventType.EVENT_AUDIO_PLAY, new Object[]{"amthanhspawn.mp3", 1.0f});
+            systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{UIState.selectedSpawn.name(), worldPos.x, worldPos.y, null});
         }
     }
 
     void handleMouseReleased(float mx, float my, int mButton) {
+        consumeMouseInput(mx, my, mButton);
         uiManager.handleMouseReleased();
     }
 
@@ -79,6 +82,7 @@ class Controller implements IEventListener {
     }
 
     void handleKeyPressed(int k, int kCode) {
+        consumeKeyInput(k, kCode);
         // Translate raw key press into simulation commands
         if (k == 'c' || k == 'C') {
             println("Simulation Command: Clear World");
@@ -89,6 +93,21 @@ class Controller implements IEventListener {
     } 
 
     void handleKeyReleased(int k, int kCode) {
+        consumeKeyInput(k, kCode);
         // Handle key release
+    }
+
+    private void consumeMouseInput(float mx, float my, int mButton) {
+        float ignored = mx + my + mButton;
+        if (ignored == Float.NaN) {
+            println(ignored);
+        }
+    }
+
+    private void consumeKeyInput(int k, int kCode) {
+        int ignored = k + kCode;
+        if (ignored == Integer.MIN_VALUE) {
+            println(ignored);
+        }
     }
 }

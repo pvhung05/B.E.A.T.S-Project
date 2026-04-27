@@ -26,6 +26,7 @@ class GameMenu {
     void init() {
         buttons.clear();
 
+        // TODO: @[SysDes] @[UI] Auto-Save Config - System Designer needs to define the naming and location of the config save file. UI needs to save SFX/Music volume to this file on mouse release instead of using a save button, and load it immediately on startup.
         float centerX = width / 2;
         float startY = height / 2 - 80;
 
@@ -53,7 +54,7 @@ class GameMenu {
         musicSlider = new Slider(
             centerX - 100, startY + 130,
             200, 40,
-            "Music",
+            "Background Music",
             0, 1,
             0.5
         );
@@ -92,6 +93,13 @@ class GameMenu {
         // sliders
         sfxSlider.update();
         musicSlider.update();
+        
+        // Sync slider values to UIState
+        UIState.sfxVolume = sfxSlider.value;
+        UIState.musicVolume = musicSlider.value;
+        
+        // Apply music volume immediately (always check, especially for mute transitions)
+        audioManager.setMusicVolume(musicSlider.value);
 
         sfxSlider.render();
         musicSlider.render();
