@@ -112,3 +112,7 @@ class CCorpse extends Component {
         this.lifetime = lifetime;
     }
 }
+
+class CMeat extends Component {
+    // Marker component indicating the entity drops a corpse upon death
+}

@@ -102,6 +102,19 @@ class SysSteering extends System {
         }
     }
 
+    /** Applies F=MA steering by clamping the change in velocity to turnRate (maxForce) */
+    private void applySteeringForce(CVelocity velocity, float targetVx, float targetVy, float turnRate) {
+        float steerVx = targetVx - velocity.vx;
+        float steerVy = targetVy - velocity.vy;
+        float steerMag = sqrt(steerVx * steerVx + steerVy * steerVy);
+        if (steerMag > turnRate) {
+            steerVx = (steerVx / steerMag) * turnRate;
+            steerVy = (steerVy / steerMag) * turnRate;
+        }
+        velocity.vx += steerVx;
+        velocity.vy += steerVy;
+    }
+
     @Override
     void update(Coordinator coordinator, QuadTree spatialTree) {
         ArrayList<Integer> copy = new ArrayList<Integer>(entities);
@@ -150,8 +163,7 @@ class SysSteering extends System {
             if (len > 0) {
                 float targetVx = (dx / len) * spd;
                 float targetVy = (dy / len) * spd;
-                velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
-                velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
+                applySteeringForce(velocity, targetVx, targetVy, steering.turnRate);
             }
         } else if (target == -1 && tryTransition(steering, State.CRUISE)) {
             if (random(1) < 0.02f) {
@@ -159,8 +171,7 @@ class SysSteering extends System {
                 steering.wanderTargetVx = cos(angle) * steering.speed;
                 steering.wanderTargetVy = sin(angle) * steering.speed;
             }
-            velocity.vx += (steering.wanderTargetVx - velocity.vx) * steering.turnRate;
-            velocity.vy += (steering.wanderTargetVy - velocity.vy) * steering.turnRate;
+            applySteeringForce(velocity, steering.wanderTargetVx, steering.wanderTargetVy, steering.turnRate);
         } else {
             // Cooldown active — continue current behavior
             steering.stateTimer++;
@@ -195,8 +206,7 @@ class SysSteering extends System {
                 // Use turnRate steering instead of direct velocity overwrite (smoother flee)
                 float targetVx = (fleeX / fLen) * spd;
                 float targetVy = (fleeY / fLen) * spd;
-                velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
-                velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
+                applySteeringForce(velocity, targetVx, targetVy, steering.turnRate);
             }
             return;
         }
@@ -302,8 +312,7 @@ class SysSteering extends System {
             if (vLen > 0) {
                 float targetVx = (newVx / vLen) * steering.speed;
                 float targetVy = (newVy / vLen) * steering.speed;
-                velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
-                velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
+                applySteeringForce(velocity, targetVx, targetVy, steering.turnRate);
             }
         } else {
             if (random(1) < 0.02f) {
@@ -311,8 +320,7 @@ class SysSteering extends System {
                 steering.wanderTargetVx = cos(angle) * steering.speed;
                 steering.wanderTargetVy = sin(angle) * steering.speed;
             }
-            velocity.vx += (steering.wanderTargetVx - velocity.vx) * steering.turnRate;
-            velocity.vy += (steering.wanderTargetVy - velocity.vy) * steering.turnRate;
+            applySteeringForce(velocity, steering.wanderTargetVx, steering.wanderTargetVy, steering.turnRate);
         }
     }
 
@@ -340,8 +348,7 @@ class SysSteering extends System {
             if (len > 0) {
                 float targetVx = (dx / len) * spd;
                 float targetVy = (dy / len) * spd;
-                velocity.vx += (targetVx - velocity.vx) * steering.turnRate;
-                velocity.vy += (targetVy - velocity.vy) * steering.turnRate;
+                applySteeringForce(velocity, targetVx, targetVy, steering.turnRate);
             }
         } else if (target == -1 && tryTransition(steering, State.CRUISE)) {
             CEcology ecology = coordinator.getComponent(entity, CEcology.class);
@@ -356,8 +363,7 @@ class SysSteering extends System {
                     steering.wanderTargetVy = 0;
                 }
             }
-            velocity.vx += (steering.wanderTargetVx - velocity.vx) * steering.turnRate;
-            velocity.vy += (steering.wanderTargetVy - velocity.vy) * steering.turnRate;
+            applySteeringForce(velocity, steering.wanderTargetVx, steering.wanderTargetVy, steering.turnRate);
         } else {
             steering.stateTimer++;
         }
