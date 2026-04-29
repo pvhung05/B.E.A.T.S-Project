@@ -3,7 +3,7 @@
   "spawns": [
     {
       "species": "ALGAE",
-      "count": 800,
+      "count": 1200,
       "region": {
         "x": 0.0,
         "y": 0.0,
@@ -14,18 +14,18 @@
     },
     {
       "species": "SARDINE",
-      "count": 50,
+      "count": 80,
       "region": {
         "x": 0.2,
         "y": 0.2,
         "w": 0.6,
         "h": 0.6
       },
-      "initialEnergy": 0.9
+      "initialEnergy": 1.0
     },
     {
       "species": "SHARK",
-      "count": 5,
+      "count": 3,
       "region": {
         "x": 0.4,
         "y": 0.4,

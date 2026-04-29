@@ -3,9 +3,9 @@
     "type": "consumer",
     "energy": {
         "maxEnergy": 100,
-        "metabolismRate": 0.05,
-        "hungerThreshold": 50,
-        "energyGain": 15
+        "metabolismRate": 0.03,
+        "hungerThreshold": 55,
+        "energyGain": 20
     },
     "movement": {
         "speed": 3,
@@ -30,10 +30,10 @@
         "food": [
             "algae"
         ],
-        "visionRadius": 50,
+        "visionRadius": 80,
         "attackRadius": 10
     },
     "reproduction": {
-        "energyThreshold": 95
+        "energyThreshold": 75
     }
 }

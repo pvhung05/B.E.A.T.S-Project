@@ -388,6 +388,12 @@ class SysPredation extends System {
             if (energy == null || transform == null || senses == null || diet == null) continue;
             if (energy.level >= energy.max) continue;
 
+            // Digest cooldown — tick down and skip if still digesting
+            if (diet.digestTimer > 0) {
+                diet.digestTimer--;
+                continue;
+            }
+
             ArrayList<Integer> nearby = new ArrayList<Integer>();
             spatialTree.query(coordinator, transform.x, transform.y, senses.attackRadius, nearby);
 
@@ -405,8 +411,8 @@ class SysPredation extends System {
                         energy.level = min(energy.max, energy.level + gained);
                         if (otherEnergy != null) otherEnergy.level -= gained;
                     } else {
-                        // Consumer: take 50% of prey's energy, prey dies
-                        float gained = (otherEnergy != null) ? otherEnergy.level * 0.5f : diet.energyGain;
+                        // Consumer: take 40% of prey's energy, prey dies
+                        float gained = (otherEnergy != null) ? otherEnergy.level * 0.4f : diet.energyGain;
                         energy.level = min(energy.max, energy.level + gained);
                         if (otherEnergy != null) otherEnergy.level = 0;
                     }
@@ -415,6 +421,11 @@ class SysPredation extends System {
                     systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, new Object[]{
                         otherSpecies.type.name(), otherT.x, otherT.y, "EATEN"
                     });
+
+                    // Start digest cooldown (decomposers don't need one — they graze)
+                    if (otherSpecies.type != EntityType.CORPSE) {
+                        diet.digestTimer = diet.digestCooldown;
+                    }
                     break;
                 }
             }
