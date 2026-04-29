@@ -23,7 +23,7 @@ class TemperatureSubMenu extends SubMenu {
 
         slider = new Slider(
             x, y, w, UIState.buttonH,
-            "Temperature",
+            "",
             -20, 50,
             UIState.temperature
             );
@@ -74,7 +74,7 @@ class PollutionSubMenu extends SubMenu {
 
         slider = new Slider(
             x, y, w, UIState.buttonH,
-            "Pollution",
+            "",
             0, 100,
             UIState.pollution
             );
