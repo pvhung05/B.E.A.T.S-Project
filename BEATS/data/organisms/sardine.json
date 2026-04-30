@@ -3,9 +3,9 @@
     "type": "consumer",
     "energy": {
         "maxEnergy": 100,
-        "metabolismRate": 0.05,
-        "hungerThreshold": 50,
-        "energyGain": 15
+        "metabolismRate": 0.01,
+        "hungerThreshold": 45,
+        "energyGain": 30
     },
     "movement": {
         "speed": 3,
@@ -19,7 +19,7 @@
     },
     "ecology": {
         "minDepth": 0.05,
-        "maxDepth": 0.5,
+        "maxDepth": 0.6,
         "minWidth": 0.2,
         "maxWidth": 0.9,
         "minTemperature": 8,
@@ -30,8 +30,9 @@
         "food": [
             "algae"
         ],
-        "visionRadius": 50,
-        "attackRadius": 10
+        "visionRadius": 40,
+        "attackRadius": 10,
+        "digestCooldown": 10
     },
     "reproduction": {
         "energyThreshold": 95

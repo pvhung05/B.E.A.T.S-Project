@@ -22,6 +22,7 @@ class EntityManager implements IEventListener {
         coordinator.registerComponent(CProducer.class);
         coordinator.registerComponent(CCorpse.class);
         coordinator.registerComponent(CMeat.class);
+        coordinator.registerComponent(CPressure.class);
 
         // 2. Register Systems
         coordinator.registerSystem(SysEnvironment.class, new SysEnvironment(), 
@@ -55,9 +56,13 @@ class EntityManager implements IEventListener {
                 java.lang.System.err.println("EntityManager: Unknown entity type '" + entityId + "' — spawn ignored.");
                 return;
             }
+
+            // Clamping spawn to world bounds (nearest edge)
+            float clampedX = constrain(x, 0, UIState.WORLD_WIDTH);
+            float clampedY = constrain(y, 0, UIState.WORLD_HEIGHT);
             
             // Factory now returns an int ID
-            int e = entityFactory.spawn(coordinator, entityType, x, y, initialEnergyPct);
+            int e = entityFactory.spawn(coordinator, entityType, clampedX, clampedY, initialEnergyPct);
             if (e != -1) {
                 activeEntities.add(e);
             }

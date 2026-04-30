@@ -90,9 +90,13 @@ class CDiet extends Component {
     float energyGain;
     ArrayList<EntityType> prey = new ArrayList<EntityType>();
 
-    CDiet(float hungerThreshold, float energyGain, EntityType... preyTypes) {
+    int digestCooldown;
+    int digestTimer    = 0;
+
+    CDiet(float hungerThreshold, float energyGain, int digestCooldown, EntityType... preyTypes) {
         this.hungerThreshold = hungerThreshold;
         this.energyGain = energyGain;
+        this.digestCooldown = digestCooldown;
         for (EntityType pt : preyTypes) {
             this.prey.add(pt);
         }
@@ -115,4 +119,12 @@ class CCorpse extends Component {
 
 class CMeat extends Component {
     // Marker component indicating the entity drops a corpse upon death
+}
+
+class CPressure extends Component {
+    float minDepth, maxDepth;
+    CPressure(float min, float max) {
+        this.minDepth = min;
+        this.maxDepth = max;
+    }
 }

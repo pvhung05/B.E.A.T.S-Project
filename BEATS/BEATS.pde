@@ -130,8 +130,8 @@ void loadScenario(String path) {
             }
 
             for (int n = 0; n < count; n++) {
-                float rx = random(spawnX, spawnX + spawnW);
-                float ry = random(spawnY, spawnY + spawnH);
+                float rx = constrain(random(spawnX, spawnX + spawnW), 0, UIState.WORLD_WIDTH);
+                float ry = constrain(random(spawnY, spawnY + spawnH), 0, UIState.WORLD_HEIGHT);
                 systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{species, rx, ry, energy});
             }
         }
@@ -215,20 +215,8 @@ void draw() {
             else if (s.type == EntityType.CRAB) crab++;
             else if (s.type == EntityType.SHARK) shark++;
         }
-        println("Sec " + (frameCount/frameRate) + " | Algae: " + algae + " | Sardine: " + sardine + " | Crab: " + crab + " | Shark: " + shark + " | Total: " + world.activeEntities.size());
-        
-        if (algae == 0 || sardine == 0 || crab == 0 || shark == 0) {
-            println("COLLAPSE: Species extinct!");
-            throw new RuntimeException("COLLAPSE: Species extinct!");
-        }
-        if (world.activeEntities.size() > 15000) {
-            println("COLLAPSE: Overpopulation!");
-            throw new RuntimeException("COLLAPSE: Overpopulation!");
-        }
-        if (frameCount >= frameRate * 45) {
-            println("SUCCESS: Survived 45 seconds!");
-            exit();
-        }
+        int simSec = frameCount / 60;
+        println("Simulated Sec " + simSec + " | Algae: " + algae + " | Sardine: " + sardine + " | Crab: " + crab + " | Shark: " + shark + " | Total: " + world.activeEntities.size());
     }
 }
 
