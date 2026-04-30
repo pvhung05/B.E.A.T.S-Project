@@ -15,6 +15,7 @@ static class UIState {
 
     static float temperature = 20;
     static float pollution = 10;
+    static float nutrients = 0; // Shared pool for Algae growth
     
     // Audio volume controls (0-1 range)
     static float sfxVolume = 0.5;

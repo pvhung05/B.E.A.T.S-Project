@@ -215,7 +215,8 @@ void draw() {
             else if (s.type == EntityType.CRAB) crab++;
             else if (s.type == EntityType.SHARK) shark++;
         }
-        println("Sec " + (frameCount/60) + " | Algae: " + algae + " | Sardine: " + sardine + " | Crab: " + crab + " | Shark: " + shark + " | Total: " + world.activeEntities.size());
+        int simSec = frameCount / 60;
+        println("Simulated Sec " + simSec + " | Algae: " + algae + " | Sardine: " + sardine + " | Crab: " + crab + " | Shark: " + shark + " | Total: " + world.activeEntities.size());
     }
 }
 

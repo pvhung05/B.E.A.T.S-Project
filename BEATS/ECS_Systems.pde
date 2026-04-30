@@ -431,6 +431,9 @@ class SysPredation extends System {
                         float gained = (otherEnergy != null) ? min(diet.energyGain, otherEnergy.level) : diet.energyGain;
                         energy.level = min(energy.max, energy.level + gained);
                         if (otherEnergy != null) otherEnergy.level -= gained;
+
+                        // Metabolism Loop: Decomposers return nutrients to the water
+                        UIState.nutrients += gained * 0.5f;
                     } else {
                         // Consumer: take 40% of prey's energy, prey dies
                         float gained = (otherEnergy != null) ? otherEnergy.level * 0.4f : diet.energyGain;
@@ -457,6 +460,9 @@ class SysPredation extends System {
 class SysEnvironment extends System {
     @Override
     void update(Coordinator coordinator, QuadTree spatialTree) {
+        // Global nutrient decay
+        UIState.nutrients *= 0.995f;
+
         ArrayList<Integer> copy = new ArrayList<Integer>(entities);
         for (int entity : copy) {
             CTransform transform = coordinator.getComponent(entity, CTransform.class);
@@ -494,7 +500,15 @@ class SysEnvironment extends System {
             CProducer producer = coordinator.getComponent(entity, CProducer.class);
             if (producer != null) {
                 float depthFactor = 1.0f - (transform.y / UIState.WORLD_HEIGHT);
-                energy.level = min(energy.max, energy.level + producer.photosynthesisRate * depthFactor);
+                
+                // Nutrients boost photosynthesis
+                float nutrientBonus = 0;
+                if (UIState.nutrients > 0) {
+                    nutrientBonus = min(UIState.nutrients, 0.02f);
+                    UIState.nutrients -= nutrientBonus;
+                }
+
+                energy.level = min(energy.max, energy.level + (producer.photosynthesisRate * depthFactor) + nutrientBonus);
             }
         }
     }
