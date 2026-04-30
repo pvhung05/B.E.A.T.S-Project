@@ -24,7 +24,7 @@
         "food": [
             "dead"
         ],
-        "visionRadius": 50,
+        "visionRadius": 200,
         "consumeRadius": 10,
         "digestCooldown": 10
     },

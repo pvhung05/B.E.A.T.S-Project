@@ -5,7 +5,7 @@
         "maxEnergy": 150,
         "metabolismRate": 0.005,
         "hungerThreshold": 80,
-        "energyGain": 100
+        "energyGain": 200
     },
     "movement": {
         "speed": 4.0,
@@ -24,11 +24,11 @@
         "food": [
             "sardine"
         ],
-        "visionRadius": 50,
+        "visionRadius": 200,
         "attackRadius": 12,
         "digestCooldown": 1200
     },
     "reproduction": {
-        "energyThreshold": 140
+        "energyThreshold": 100
     }
 }

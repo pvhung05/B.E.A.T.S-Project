@@ -35,6 +35,6 @@
         "digestCooldown": 10
     },
     "reproduction": {
-        "energyThreshold": 80
+        "energyThreshold": 95
     }
 }
