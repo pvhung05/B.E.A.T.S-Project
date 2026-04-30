@@ -47,6 +47,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CTransform(x, y, 8, 8));
                 coordinator.addComponent(entity, new CEnergy(currentEnergy, maxEnergy, metabolism, reproduceThreshold));
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
+                coordinator.addComponent(entity, new CPressure(minDepth, maxDepth));
                 coordinator.addComponent(entity, new CProducer(cfgFloat("algae", "energy", "photosynthesisRate")));
                 break;
             case SARDINE:
@@ -54,6 +55,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CVelocity(random(-1,1), random(-1,1)));
                 coordinator.addComponent(entity, new CEnergy(currentEnergy, maxEnergy, metabolism, reproduceThreshold));
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
+                coordinator.addComponent(entity, new CPressure(minDepth, maxDepth));
                 coordinator.addComponent(entity, new CSteering(speed, turnRate));
                 coordinator.addComponent(entity, new CSenses(vision, attack));
                 coordinator.addComponent(entity, new CDiet(hunger, gain, digest, EntityType.ALGAE));
@@ -64,6 +66,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CVelocity(random(-1,1), random(-1,1)));
                 coordinator.addComponent(entity, new CEnergy(currentEnergy, maxEnergy, metabolism, reproduceThreshold));
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
+                coordinator.addComponent(entity, new CPressure(minDepth, maxDepth));
                 coordinator.addComponent(entity, new CSteering(speed, turnRate));
                 coordinator.addComponent(entity, new CSenses(vision, attack));
                 coordinator.addComponent(entity, new CDiet(hunger, gain, digest, EntityType.SARDINE));
@@ -74,6 +77,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CVelocity(random(-1,1), random(-1,1)));
                 coordinator.addComponent(entity, new CEnergy(currentEnergy, maxEnergy, metabolism, reproduceThreshold));
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
+                coordinator.addComponent(entity, new CPressure(minDepth, maxDepth));
                 coordinator.addComponent(entity, new CSteering(speed, turnRate));
                 coordinator.addComponent(entity, new CSenses(vision, attack));
                 coordinator.addComponent(entity, new CDiet(hunger, gain, digest, EntityType.CORPSE));

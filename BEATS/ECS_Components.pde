@@ -120,3 +120,11 @@ class CCorpse extends Component {
 class CMeat extends Component {
     // Marker component indicating the entity drops a corpse upon death
 }
+
+class CPressure extends Component {
+    float minDepth, maxDepth;
+    CPressure(float min, float max) {
+        this.minDepth = min;
+        this.maxDepth = max;
+    }
+}

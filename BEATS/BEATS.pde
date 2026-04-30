@@ -130,8 +130,8 @@ void loadScenario(String path) {
             }
 
             for (int n = 0; n < count; n++) {
-                float rx = random(spawnX, spawnX + spawnW);
-                float ry = random(spawnY, spawnY + spawnH);
+                float rx = constrain(random(spawnX, spawnX + spawnW), 0, UIState.WORLD_WIDTH);
+                float ry = constrain(random(spawnY, spawnY + spawnH), 0, UIState.WORLD_HEIGHT);
                 systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{species, rx, ry, energy});
             }
         }

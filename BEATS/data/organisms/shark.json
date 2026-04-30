@@ -13,7 +13,7 @@
     },
     "ecology": {
         "minDepth": 0.2,
-        "maxDepth": 0.9,
+        "maxDepth": 0.7,
         "minWidth": 0.4,
         "maxWidth": 1.0,
         "minTemperature": 10,

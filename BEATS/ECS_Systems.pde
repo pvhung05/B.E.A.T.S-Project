@@ -118,6 +118,23 @@ class SysSteering extends System {
         velocity.vy += steerVy;
     }
 
+    /** Applies a vertical force to keep entities within their preferred depth zones */
+    private void applyDepthConstraints(CTransform transform, CVelocity velocity, CSteering steering, CPressure pressure) {
+        if (pressure == null) return;
+
+        float floorY = pressure.minDepth * UIState.WORLD_HEIGHT;
+        float ceilY  = pressure.maxDepth * UIState.WORLD_HEIGHT;
+
+        // If above the zone, push down
+        if (transform.y < floorY) {
+            applySteeringForce(velocity, velocity.vx, steering.speed, steering.turnRate);
+        }
+        // If below the zone, push up
+        else if (transform.y > ceilY) {
+            applySteeringForce(velocity, velocity.vx, -steering.speed, steering.turnRate);
+        }
+    }
+
     @Override
     void update(Coordinator coordinator, QuadTree spatialTree) {
         ArrayList<Integer> copy = new ArrayList<Integer>(entities);
@@ -127,6 +144,7 @@ class SysSteering extends System {
             CSteering steering = coordinator.getComponent(entity, CSteering.class);
             CSenses senses = coordinator.getComponent(entity, CSenses.class);
             CSpecies species = coordinator.getComponent(entity, CSpecies.class);
+            CPressure pressure = coordinator.getComponent(entity, CPressure.class);
 
             ArrayList<Integer> nearby = new ArrayList<Integer>();
             spatialTree.query(coordinator, transform.x, transform.y, senses.visionRadius, nearby);
@@ -139,6 +157,9 @@ class SysSteering extends System {
             } else if (species.type == EntityType.CRAB) {
                 updateCrabSteering(entity, coordinator, transform, velocity, steering, nearby);
             }
+
+            // Enforce depth zone using CPressure
+            applyDepthConstraints(transform, velocity, steering, pressure);
         }
     }
 
@@ -442,24 +463,31 @@ class SysEnvironment extends System {
             CEnergy energy = coordinator.getComponent(entity, CEnergy.class);
             CEcology ecology = coordinator.getComponent(entity, CEcology.class);
             CSpecies species = coordinator.getComponent(entity, CSpecies.class);
+            CPressure pressure = coordinator.getComponent(entity, CPressure.class);
 
             // Temperature Stress — read actual temperature tolerance from JSON
             String sName = species.type.name().toLowerCase();
             float minTemp = cfgFloatOr(sName, "ecology", "minTemperature", 0.0f);
             float maxTemp = cfgFloatOr(sName, "ecology", "maxTemperature", 100.0f);
+            
             if (UIState.temperature < minTemp || UIState.temperature > maxTemp) {
-                energy.level -= energy.metabolism * 0.5f;
+                // Harsh environment triples metabolism drain
+                energy.level -= energy.metabolism * 2.0f;
             }
 
-            // Pollution Stress
+            // Pollution Stress — higher pollution directly damages health
             if (UIState.pollution > UIState.POLLUTION_STRESS_THRESHOLD) {
-                energy.level -= (UIState.pollution - UIState.POLLUTION_STRESS_THRESHOLD) * 0.01f;
+                float pollutionTolerance = cfgFloatOr(sName, "ecology", "pollutionTolerance", 0.5f);
+                float damage = (UIState.pollution - UIState.POLLUTION_STRESS_THRESHOLD) * (1.0f - pollutionTolerance) * 0.05f;
+                energy.level -= damage;
             }
 
-            // Depth Constraint Stress — penalise entities outside their preferred depth zone
-            float normalizedDepth = transform.y / UIState.WORLD_HEIGHT;
-            if (normalizedDepth < ecology.minDepth || normalizedDepth > ecology.maxDepth) {
-                energy.level -= energy.metabolism * 0.5f;
+            // Depth Constraint Stress — penalise entities outside their preferred depth zone (CPressure)
+            if (pressure != null) {
+                float normalizedDepth = transform.y / UIState.WORLD_HEIGHT;
+                if (normalizedDepth < pressure.minDepth || normalizedDepth > pressure.maxDepth) {
+                    energy.level -= energy.metabolism * 1.5f;
+                }
             }
 
             // Producer specific
