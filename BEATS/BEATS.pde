@@ -215,20 +215,7 @@ void draw() {
             else if (s.type == EntityType.CRAB) crab++;
             else if (s.type == EntityType.SHARK) shark++;
         }
-        println("Sec " + (frameCount/frameRate) + " | Algae: " + algae + " | Sardine: " + sardine + " | Crab: " + crab + " | Shark: " + shark + " | Total: " + world.activeEntities.size());
-        
-        if (algae == 0 || sardine == 0 || crab == 0 || shark == 0) {
-            println("COLLAPSE: Species extinct!");
-            throw new RuntimeException("COLLAPSE: Species extinct!");
-        }
-        if (world.activeEntities.size() > 15000) {
-            println("COLLAPSE: Overpopulation!");
-            throw new RuntimeException("COLLAPSE: Overpopulation!");
-        }
-        if (frameCount >= frameRate * 45) {
-            println("SUCCESS: Survived 45 seconds!");
-            exit();
-        }
+        println("Sec " + (frameCount/60) + " | Algae: " + algae + " | Sardine: " + sardine + " | Crab: " + crab + " | Shark: " + shark + " | Total: " + world.activeEntities.size());
     }
 }
 

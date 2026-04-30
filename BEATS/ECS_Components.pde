@@ -90,13 +90,13 @@ class CDiet extends Component {
     float energyGain;
     ArrayList<EntityType> prey = new ArrayList<EntityType>();
 
-    // Digest cooldown — prevents chain-killing through a school
-    int digestCooldown = 120;  // Frames between kills (~2s at 60fps)
-    int digestTimer    = 0;    // Counts down to 0
+    int digestCooldown;
+    int digestTimer    = 0;
 
-    CDiet(float hungerThreshold, float energyGain, EntityType... preyTypes) {
+    CDiet(float hungerThreshold, float energyGain, int digestCooldown, EntityType... preyTypes) {
         this.hungerThreshold = hungerThreshold;
         this.energyGain = energyGain;
+        this.digestCooldown = digestCooldown;
         for (EntityType pt : preyTypes) {
             this.prey.add(pt);
         }
