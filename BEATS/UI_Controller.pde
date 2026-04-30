@@ -58,13 +58,8 @@ class Controller implements IEventListener {
         int clickedEntity = world.getObjectAt(worldPos.x, worldPos.y);
 
         if (UIState.cullActive) {
-            if (clickedEntity != -1) {
-                CSpecies s = world.coordinator.getComponent(clickedEntity, CSpecies.class);
-                CTransform t = world.coordinator.getComponent(clickedEntity, CTransform.class);
-                if (s != null && t != null) {
-                    systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, new Object[]{s.type.name(), t.x, t.y, "CULL"});
-                }
-            }
+            // Fishing tool: catch all entities in 30x30 net around mouse click
+            catchAllInNet(worldPos.x, worldPos.y);
         } else if (clickedEntity == -1 && UIState.selectedSpawn != null) {
             println("Simulation Command: Spawned " + UIState.selectedSpawn + " at " + worldPos);
             systemBus.publish(EventType.EVENT_AUDIO_PLAY, new Object[]{"amthanhspawn.mp3", 1.0f});
@@ -109,5 +104,39 @@ class Controller implements IEventListener {
         if (ignored == Integer.MIN_VALUE) {
             println(ignored);
         }
+    }
+    
+    void catchAllInNet(float netCenterX, float netCenterY) {
+        float netSize = 30.0f;
+        float halfNet = netSize / 2.0f;
+        
+        ArrayList<Integer> entitiesToCatch = new ArrayList<Integer>();
+        
+        // Find all entities within the 30x30 net area
+        for (int entity : world.activeEntities) {
+            CTransform transform = world.coordinator.getComponent(entity, CTransform.class);
+            
+            if (transform != null) {
+                // Check if entity center is within net bounds
+                if (transform.x >= netCenterX - halfNet && 
+                    transform.x <= netCenterX + halfNet &&
+                    transform.y >= netCenterY - halfNet && 
+                    transform.y <= netCenterY + halfNet) {
+                    entitiesToCatch.add(entity);
+                }
+            }
+        }
+        
+        // Catch all found entities
+        int caughtCount = entitiesToCatch.size();
+        for (int entity : entitiesToCatch) {
+            CSpecies s = world.coordinator.getComponent(entity, CSpecies.class);
+            CTransform t = world.coordinator.getComponent(entity, CTransform.class);
+            if (s != null && t != null) {
+                systemBus.publish(EventType.EVENT_ENTITY_DESTROYED, new Object[]{s.type.name(), t.x, t.y, "CULL"});
+            }
+        }
+        
+        println("Fishing: Caught " + caughtCount + " entities in 30x30 net");
     }
 }
