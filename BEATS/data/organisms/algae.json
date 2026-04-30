@@ -3,7 +3,7 @@
     "type": "producer",
     "energy": {
         "maxEnergy": 100,
-        "metabolismRate": 0.015,
+        "metabolismRate": 0.01,
         "photosynthesisRate": 0.10
     },
     "movement": {
@@ -20,7 +20,7 @@
         "pollutionTolerance": 0.6
     },
     "reproduction": {
-        "energyThreshold": 80,
+        "energyThreshold": 99,
         "spawnRate": 0.05
     }
 }

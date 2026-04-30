@@ -1,0 +1,61 @@
+
+=== LOADING SOUNDS ===
+? ?m thanh: nhacnen.mp3
+==== JavaSound Minim Error ====
+==== Don't know the ID3 code TSSE
+
+? ?m thanh: amthanhspawn.mp3
+? ?m thanh: amthanhcull.mp3
+==== JavaSound Minim Error ====
+==== Don't know the ID3 code TSSE
+
+? ?m thanh: amthanhbutton.mp3
+=== SOUND LOADING DONE ===
+
+? Kh?i ??ng nh?c n?n...
+? Nh?c n?n ?ang ph?t (volume: 0.50)
+Setup Done
+Simulated Sec 1 | Algae: 993 | Sardine: 101 | Crab: 20 | Shark: 3 | Total: 1117
+Simulated Sec 2 | Algae: 993 | Sardine: 101 | Crab: 20 | Shark: 3 | Total: 1117
+Simulated Sec 3 | Algae: 991 | Sardine: 101 | Crab: 20 | Shark: 3 | Total: 1115
+Simulated Sec 4 | Algae: 990 | Sardine: 101 | Crab: 20 | Shark: 3 | Total: 1114
+Simulated Sec 5 | Algae: 985 | Sardine: 101 | Crab: 20 | Shark: 3 | Total: 1109
+Simulated Sec 6 | Algae: 983 | Sardine: 101 | Crab: 20 | Shark: 3 | Total: 1107
+Simulated Sec 7 | Algae: 963 | Sardine: 102 | Crab: 20 | Shark: 3 | Total: 1088
+Simulated Sec 8 | Algae: 951 | Sardine: 103 | Crab: 20 | Shark: 3 | Total: 1077
+Simulated Sec 9 | Algae: 935 | Sardine: 108 | Crab: 20 | Shark: 3 | Total: 1066
+Simulated Sec 10 | Algae: 926 | Sardine: 111 | Crab: 20 | Shark: 3 | Total: 1061
+Simulated Sec 11 | Algae: 921 | Sardine: 112 | Crab: 20 | Shark: 3 | Total: 1057
+Simulated Sec 12 | Algae: 915 | Sardine: 74 | Crab: 20 | Shark: 3 | Total: 1052
+Simulated Sec 13 | Algae: 908 | Sardine: 57 | Crab: 20 | Shark: 3 | Total: 1045
+Simulated Sec 14 | Algae: 894 | Sardine: 51 | Crab: 20 | Shark: 3 | Total: 1032
+Simulated Sec 15 | Algae: 889 | Sardine: 51 | Crab: 20 | Shark: 3 | Total: 1028
+Simulated Sec 16 | Algae: 887 | Sardine: 50 | Crab: 20 | Shark: 3 | Total: 1027
+Simulated Sec 17 | Algae: 878 | Sardine: 52 | Crab: 23 | Shark: 3 | Total: 1020
+Simulated Sec 18 | Algae: 870 | Sardine: 54 | Crab: 23 | Shark: 3 | Total: 1014
+Simulated Sec 19 | Algae: 866 | Sardine: 56 | Crab: 23 | Shark: 3 | Total: 1014
+Simulated Sec 20 | Algae: 852 | Sardine: 59 | Crab: 23 | Shark: 3 | Total: 1005
+Simulated Sec 21 | Algae: 846 | Sardine: 57 | Crab: 23 | Shark: 3 | Total: 1000
+Simulated Sec 22 | Algae: 842 | Sardine: 56 | Crab: 24 | Shark: 3 | Total: 999
+Simulated Sec 23 | Algae: 818 | Sardine: 61 | Crab: 24 | Shark: 3 | Total: 980
+Simulated Sec 24 | Algae: 811 | Sardine: 62 | Crab: 24 | Shark: 3 | Total: 975
+Simulated Sec 25 | Algae: 802 | Sardine: 63 | Crab: 26 | Shark: 3 | Total: 969
+Simulated Sec 26 | Algae: 788 | Sardine: 65 | Crab: 26 | Shark: 3 | Total: 959
+Simulated Sec 27 | Algae: 779 | Sardine: 63 | Crab: 26 | Shark: 3 | Total: 951
+Simulated Sec 28 | Algae: 772 | Sardine: 65 | Crab: 27 | Shark: 3 | Total: 947
+Simulated Sec 29 | Algae: 759 | Sardine: 67 | Crab: 27 | Shark: 3 | Total: 937
+Simulated Sec 30 | Algae: 750 | Sardine: 68 | Crab: 27 | Shark: 3 | Total: 931
+Simulated Sec 31 | Algae: 745 | Sardine: 69 | Crab: 27 | Shark: 3 | Total: 928
+Simulated Sec 32 | Algae: 739 | Sardine: 69 | Crab: 27 | Shark: 2 | Total: 923
+Simulated Sec 33 | Algae: 737 | Sardine: 68 | Crab: 27 | Shark: 2 | Total: 921
+Simulated Sec 34 | Algae: 724 | Sardine: 69 | Crab: 27 | Shark: 2 | Total: 912
+Simulated Sec 35 | Algae: 716 | Sardine: 71 | Crab: 27 | Shark: 2 | Total: 907
+Simulated Sec 36 | Algae: 712 | Sardine: 70 | Crab: 27 | Shark: 1 | Total: 904
+Simulated Sec 37 | Algae: 704 | Sardine: 72 | Crab: 27 | Shark: 0 | Total: 900
+COLLAPSE: Species extinct!
+X11Util.Display: Shutdown (JVM shutdown: true, open (no close attempt): 3/3, reusable (open, marked uncloseable): 0, pending (open in creation order): 3)
+X11Util: Open X11 Display Connections: 3
+X11Util: Open[0]: NamedX11Display[:1, 0x7ff30c47f820, refCount 1, unCloseable false]
+X11Util: Open[1]: NamedX11Display[:1, 0x7ff1b0001500, refCount 1, unCloseable false]
+X11Util: Open[2]: NamedX11Display[:1, 0x7ff1b0013ec0, refCount 1, unCloseable false]
+Finished.

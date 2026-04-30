@@ -3,9 +3,9 @@
     "type": "consumer",
     "energy": {
         "maxEnergy": 150,
-        "metabolismRate": 0.045,
-        "hungerThreshold": 70,
-        "energyGain": 25
+        "metabolismRate": 0.005,
+        "hungerThreshold": 80,
+        "energyGain": 100
     },
     "movement": {
         "speed": 4.0,
@@ -24,10 +24,11 @@
         "food": [
             "sardine"
         ],
-        "visionRadius": 200,
-        "attackRadius": 12
+        "visionRadius": 50,
+        "attackRadius": 12,
+        "digestCooldown": 1200
     },
     "reproduction": {
-        "energyThreshold": 145
+        "energyThreshold": 140
     }
 }

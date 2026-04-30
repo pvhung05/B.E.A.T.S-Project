@@ -1,0 +1,40 @@
+
+=== LOADING SOUNDS ===
+? ?m thanh: nhacnen.mp3
+==== JavaSound Minim Error ====
+==== Don't know the ID3 code TSSE
+
+? ?m thanh: amthanhspawn.mp3
+? ?m thanh: amthanhcull.mp3
+==== JavaSound Minim Error ====
+==== Don't know the ID3 code TSSE
+
+? ?m thanh: amthanhbutton.mp3
+=== SOUND LOADING DONE ===
+
+? Kh?i ??ng nh?c n?n...
+? Nh?c n?n ?ang ph?t (volume: 0.50)
+Setup Done
+Simulated Sec 1 | Algae: 2966 | Sardine: 199 | Crab: 20 | Shark: 5 | Total: 3191
+Simulated Sec 2 | Algae: 2958 | Sardine: 198 | Crab: 20 | Shark: 5 | Total: 3183
+Simulated Sec 3 | Algae: 2954 | Sardine: 198 | Crab: 20 | Shark: 5 | Total: 3179
+Simulated Sec 4 | Algae: 2951 | Sardine: 197 | Crab: 20 | Shark: 5 | Total: 3176
+Simulated Sec 5 | Algae: 2940 | Sardine: 197 | Crab: 20 | Shark: 5 | Total: 3165
+Simulated Sec 6 | Algae: 2933 | Sardine: 197 | Crab: 20 | Shark: 5 | Total: 3158
+Simulated Sec 7 | Algae: 2912 | Sardine: 155 | Crab: 21 | Shark: 5 | Total: 3137
+Simulated Sec 8 | Algae: 2898 | Sardine: 141 | Crab: 21 | Shark: 5 | Total: 3123
+Simulated Sec 9 | Algae: 2893 | Sardine: 129 | Crab: 21 | Shark: 5 | Total: 3118
+Simulated Sec 10 | Algae: 2890 | Sardine: 125 | Crab: 21 | Shark: 5 | Total: 3115
+Simulated Sec 11 | Algae: 2890 | Sardine: 110 | Crab: 21 | Shark: 5 | Total: 3115
+Simulated Sec 12 | Algae: 2890 | Sardine: 110 | Crab: 21 | Shark: 5 | Total: 3115
+Simulated Sec 13 | Algae: 2890 | Sardine: 103 | Crab: 21 | Shark: 5 | Total: 3115
+Simulated Sec 14 | Algae: 2890 | Sardine: 84 | Crab: 21 | Shark: 5 | Total: 3115
+Simulated Sec 15 | Algae: 2890 | Sardine: 4 | Crab: 21 | Shark: 5 | Total: 3115
+Simulated Sec 16 | Algae: 2890 | Sardine: 0 | Crab: 21 | Shark: 5 | Total: 3115
+COLLAPSE: Species extinct!
+X11Util.Display: Shutdown (JVM shutdown: true, open (no close attempt): 3/3, reusable (open, marked uncloseable): 0, pending (open in creation order): 3)
+X11Util: Open X11 Display Connections: 3
+X11Util: Open[0]: NamedX11Display[:1, 0x7fa648850830, refCount 1, unCloseable false]
+X11Util: Open[1]: NamedX11Display[:1, 0x7fa4e4001500, refCount 1, unCloseable false]
+X11Util: Open[2]: NamedX11Display[:1, 0x7fa4e4013f30, refCount 1, unCloseable false]
+Finished.

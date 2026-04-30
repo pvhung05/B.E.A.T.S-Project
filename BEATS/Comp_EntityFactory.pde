@@ -39,6 +39,7 @@ class EntityFactory {
         // hungerThreshold in JSON is an absolute energy value (e.g. 50 out of maxEnergy 100)
         float hunger = cfgFloatOr(species.name().toLowerCase(), "energy", "hungerThreshold", maxEnergy * 0.5f);
         float gain = cfgFloatOr(species.name().toLowerCase(), "energy", "energyGain", 10.0f);
+        int digest = (int)cfgFloatOr(species.name().toLowerCase(), "feeding", "digestCooldown", 10.0f);
 
         // Species-specific setup
         switch(species) {
@@ -55,7 +56,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
                 coordinator.addComponent(entity, new CSteering(speed, turnRate));
                 coordinator.addComponent(entity, new CSenses(vision, attack));
-                coordinator.addComponent(entity, new CDiet(hunger, gain, EntityType.ALGAE));
+                coordinator.addComponent(entity, new CDiet(hunger, gain, digest, EntityType.ALGAE));
                 coordinator.addComponent(entity, new CMeat());
                 break;
             case SHARK:
@@ -65,7 +66,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
                 coordinator.addComponent(entity, new CSteering(speed, turnRate));
                 coordinator.addComponent(entity, new CSenses(vision, attack));
-                coordinator.addComponent(entity, new CDiet(hunger, gain, EntityType.SARDINE));
+                coordinator.addComponent(entity, new CDiet(hunger, gain, digest, EntityType.SARDINE));
                 coordinator.addComponent(entity, new CMeat());
                 break;
             case CRAB:
@@ -75,7 +76,7 @@ class EntityFactory {
                 coordinator.addComponent(entity, new CEcology(minDepth, maxDepth));
                 coordinator.addComponent(entity, new CSteering(speed, turnRate));
                 coordinator.addComponent(entity, new CSenses(vision, attack));
-                coordinator.addComponent(entity, new CDiet(hunger, gain, EntityType.CORPSE));
+                coordinator.addComponent(entity, new CDiet(hunger, gain, digest, EntityType.CORPSE));
                 coordinator.addComponent(entity, new CMeat());
                 break;
         }
