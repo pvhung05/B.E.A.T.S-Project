@@ -205,19 +205,19 @@ void draw() {
     hint(ENABLE_DEPTH_TEST);
     
     // Ecosystem Check
-    if (frameCount % 60 == 0) {
-        int algae = 0, sardine = 0, crab = 0, shark = 0;
-        for (int e : world.activeEntities) {
-            CSpecies s = world.coordinator.getComponent(e, CSpecies.class);
-            if (s == null) continue;
-            if (s.type == EntityType.ALGAE) algae++;
-            else if (s.type == EntityType.SARDINE) sardine++;
-            else if (s.type == EntityType.CRAB) crab++;
-            else if (s.type == EntityType.SHARK) shark++;
-        }
-        int simSec = frameCount / 60;
-        println("Simulated Sec " + simSec + " | Algae: " + algae + " | Sardine: " + sardine + " | Crab: " + crab + " | Shark: " + shark + " | Total: " + world.activeEntities.size());
-    }
+    // if (frameCount % 60 == 0) {
+    //     int algae = 0, sardine = 0, crab = 0, shark = 0;
+    //     for (int e : world.activeEntities) {
+    //         CSpecies s = world.coordinator.getComponent(e, CSpecies.class);
+    //         if (s == null) continue;
+    //         if (s.type == EntityType.ALGAE) algae++;
+    //         else if (s.type == EntityType.SARDINE) sardine++;
+    //         else if (s.type == EntityType.CRAB) crab++;
+    //         else if (s.type == EntityType.SHARK) shark++;
+    //     }
+    //     int simSec = frameCount / 60;
+    //     println("Simulated Sec " + simSec + " | Algae: " + algae + " | Sardine: " + sardine + " | Crab: " + crab + " | Shark: " + shark + " | Total: " + world.activeEntities.size());
+    // }
 }
 
 void drawWorldMarkers() {
