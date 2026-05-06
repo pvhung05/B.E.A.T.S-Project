@@ -61,7 +61,7 @@ class Controller implements IEventListener {
             // Fishing tool: catch all entities in 30x30 net around mouse click
             catchAllInNet(worldPos.x, worldPos.y);
         } else if (clickedEntity == -1 && UIState.selectedSpawn != null) {
-            println("Simulation Command: Spawned " + UIState.selectedSpawn + " at " + worldPos);
+            // println("Simulation Command: Spawned " + UIState.selectedSpawn + " at " + worldPos);
             systemBus.publish(EventType.EVENT_AUDIO_PLAY, new Object[]{"amthanhspawn.mp3", 1.0f});
             systemBus.publish(EventType.EVENT_ENTITY_SPAWN_REQUEST, new Object[]{UIState.selectedSpawn.name(), worldPos.x, worldPos.y, null});
         }
@@ -80,7 +80,7 @@ class Controller implements IEventListener {
         consumeKeyInput(k, kCode);
         // Translate raw key press into simulation commands
         if (k == 'c' || k == 'C') {
-            println("Simulation Command: Clear World");
+            // println("Simulation Command: Clear World");
             for (int i = world.activeEntities.size() - 1; i >= 0; i--) {
                 world.destroyEntity(world.activeEntities.get(i));
             }

@@ -36,7 +36,7 @@ class EntityRegistry {
 
     int createEntity() {
         if (availableEntities.isEmpty()) {
-            java.lang.System.err.println("Max entities reached!");
+            println("Max entities reached!");
             return -1;
         }
         int id = availableEntities.poll();
