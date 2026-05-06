@@ -1,6 +1,6 @@
 # <p align="center">🌊 B.E.A.T.S. 🌊</p>
 <p align="center">
-  <strong>Biological Ecosystem Animation and Tracking System</strong><br>
+  <strong>Biological Ecosystem and Tracking System</strong><br>
   <i>A real-time marine ecosystem simulation built with Processing</i>
 </p>
 
