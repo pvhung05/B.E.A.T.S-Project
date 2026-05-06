@@ -103,7 +103,6 @@ Hệ thống được xây dựng trên mô hình **Entity-Component-System (ECS
 | Phím | Hành động |
 | :--- | :--- |
 | `ESC` | Mở / Đóng Menu chính |
-| `SPACE` | Tạm dừng / Tiếp tục giả lập |
 | `C` | Xóa sổ toàn bộ sinh vật (Clear All) |
 
 ---
@@ -129,7 +128,7 @@ Nếu gặp vấn đề trong quá trình vận hành, hãy kiểm tra các trư
 | **Giả lập chạy chậm (Lag)** | Giảm số lượng sinh vật bằng công cụ **Cull** hoặc chỉnh lại thông số trong `config.json`. Thu nhỏ tầm nhìn (Zoom out) cũng giúp giảm tải xử lý đồ họa. |
 | **Không có âm thanh** | Kiểm tra âm lượng hệ thống và đảm bảo thư mục `data/sound/` có đầy đủ file. Xem Console để biết lỗi thiếu file cụ thể. |
 | **Không Spawn được** | Đảm bảo giả lập đang chạy (không nhấn Pause). Kiểm tra xem biểu tượng con trỏ chuột đã thay đổi sang icon sinh vật chưa. |
-| **Biểu đồ không chạy** | Biểu đồ chỉ cập nhật khi thời gian trôi qua. Nhấn `SPACE` để đảm bảo giả lập đang Active. |
+
 
 ---
 
